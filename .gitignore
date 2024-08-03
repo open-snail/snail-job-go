@@ -1,0 +1,10 @@
+.idea/
+.vscode/
+.fleet/
+logs/
+bin/
+dist/
+*.exe
+latest_log
+.bin
+.DS_Store
