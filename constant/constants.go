@@ -12,3 +12,33 @@ const (
 	SNAIL_LOG_REMOTE_BUFFER_SIZE = 10
 	SNAIL_LOG_REMOTE_INTERVAL    = 10
 )
+
+// JobTaskTypeEnum 定义 JobTaskTypeEnum 枚举类型
+type JobTaskTypeEnum int
+
+const (
+	CLUSTER JobTaskTypeEnum = iota + 1
+	BROADCAST
+	SHARDING
+	MAP
+	MAP_REDUCE
+)
+
+type MapReduceStageEnum int
+
+const (
+	MAP_STAGE MapReduceStageEnum = iota + 1
+	REDUCE_STAGE
+	MERGE_REDUCE_STAGE
+	// Other stages...
+)
+
+type JobTaskStatusEnum int
+
+const (
+	RUNNING JobTaskStatusEnum = iota + 2
+	SUCCESS
+	FAIL
+	STOP
+	CANCEL
+)

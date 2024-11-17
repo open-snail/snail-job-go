@@ -1,8 +1,9 @@
 package main
 
 import (
+	"snail_job_go/constant"
 	"snail_job_go/demo"
-	"snail_job_go/dto"
+	"snail_job_go/endpoint"
 	"snail_job_go/job"
 	"snail_job_go/register"
 )
@@ -262,15 +263,36 @@ func main() {
 
 	manager := register.NewExecutorManager(hls)
 
-	//go hls.Init()
+	// 初始化EndPoint
 
-	// 注册示例执行器
-	manager.Register("testJobExecutor", &demo.TestJobExecutor{})
-	//manager.Register("testJobExecutorFailed", TestJobExecutorFailed)
+	jbEndPoint := endpoint.Init(manager)
 
-	testJobExecutor_, _ := manager.GetExecutor("testJobExecutor1")
-	//println(testJobExecutor_)
-	//println(error.Error())
-	testJobExecutor_.JobExecute(dto.JobContext{JobId: 1})
+	go hls.Init()
+
+	//// 注册示例执行器
+	manager.Register("testJobExecutor", demo.NewTestJobExecutor())
+
+	// ToDo 模拟远程调用endpoint
+	jbEndPoint.DispatchJob(job.DispatchJobRequest{NamespaceId: "12", JobId: 1,
+		TaskType: constant.CLUSTER, ExecutorType: 3, ExecutorInfo: "testJobExecutor"})
+
+	//testJobExecutor, _ := manager.GetExecutor("testJobExecutor")
+
+	////println(testJobExecutor_)
+	////println(error.Error())
+	//
+	//testJobExecutor.JobExecute(dto.JobContext{JobId: 1})
 	//RunServer(manager)
+
+	//// 创建子类实例
+	//context := dto.JobContext{}
+	//
+	//// 子类实例化
+	//jobExecutor := executor.NewAbstractMapJobExecutor()
+	//
+	////jobExecutor.BindJobStrategy(jobExecutor)
+	//
+	//// 调用父类的 JobExecute 方法
+	//jobExecutor.JobExecute(context)
+
 }

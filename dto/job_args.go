@@ -2,6 +2,13 @@ package dto
 
 import "sync"
 
+type IJobArgs interface {
+	GetJobParams() interface{}
+	GetExecutorInfo() string
+	GetJobId() int64
+	GetTaskBatchId() int64
+}
+
 // JobArgs job参数
 type JobArgs struct {
 	JobParams       interface{}            `json:"jobParams"`
@@ -38,4 +45,34 @@ func (j *JobArgs) GetWfContext(key string) interface{} {
 	defer j.mu.Unlock()
 
 	return j.WfContext[key]
+}
+
+func (j *JobArgs) GetJobParams() interface{} {
+	if j.JobParams == nil {
+		return nil
+	}
+	return j.JobParams
+}
+
+func (j *JobArgs) GetExecutorInfo() string {
+	if j.ExecutorInfo == "" {
+		return ""
+	}
+	return j.ExecutorInfo
+}
+
+func (j *JobArgs) GetTaskBatchId() int64 {
+	if j.TaskBatchId == 0 {
+		return 0
+	}
+
+	return j.TaskBatchId
+}
+
+func (j *JobArgs) GetJobId() int64 {
+	if j.JobId == 0 {
+		return 0
+	}
+
+	return j.JobId
 }

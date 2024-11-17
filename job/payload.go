@@ -1,30 +1,23 @@
 package job
 
 import (
+	"snail_job_go/constant"
 	"sync"
 	"time"
 )
 
-type JobTaskTypeEnum int
-
-const (
-	TASK_TYPE_CLUSTER = iota + 1
-	TASK_TYPE_BROADCAST
-	TASK_TYPE_SHARDING
-)
-
 type DispatchJobResult struct {
-	JobId               int                    `json:"jobId"`
-	TaskBatchId         int                    `json:"taskBatchId"`
-	WorkflowTaskBatchId *int                   `json:"workflowTaskBatchId,omitempty"`
-	WorkflowNodeId      *int                   `json:"workflowNodeId,omitempty"`
-	TaskId              int                    `json:"taskId"`
-	TaskType            JobTaskTypeEnum        `json:"taskType"`
-	GroupName           string                 `json:"groupName"`
-	TaskStatus          JobTaskBatchStatusEnum `json:"taskStatus"`
-	ExecuteResult       ExecuteResult          `json:"executeResult"`
-	RetryScene          *int                   `json:"retryScene,omitempty"`
-	IsRetry             bool                   `json:"isRetry"`
+	JobId               int                      `json:"jobId"`
+	TaskBatchId         int                      `json:"taskBatchId"`
+	WorkflowTaskBatchId *int                     `json:"workflowTaskBatchId,omitempty"`
+	WorkflowNodeId      *int                     `json:"workflowNodeId,omitempty"`
+	TaskId              int                      `json:"taskId"`
+	TaskType            constant.JobTaskTypeEnum `json:"taskType"`
+	GroupName           string                   `json:"groupName"`
+	TaskStatus          JobTaskBatchStatusEnum   `json:"taskStatus"`
+	ExecuteResult       ExecuteResult            `json:"executeResult"`
+	RetryScene          *int                     `json:"retryScene,omitempty"`
+	IsRetry             bool                     `json:"isRetry"`
 }
 
 type JobTaskBatchStatusEnum int
@@ -39,29 +32,48 @@ const (
 )
 
 type DispatchJobRequest struct {
-	ReqID int64             `json:"reqId"`
-	Args  []DispatchJobArgs `json:"args"`
+	NamespaceId         string                   `json:"namespaceId" description:"namespaceId 不能为空"`
+	JobId               int64                    `json:"jobId" description:"jobId 不能为空"`
+	TaskBatchId         int64                    `json:"taskBatchId" description:"taskBatchId 不能为空"`
+	TaskId              int64                    `json:"taskId" description:"taskId 不能为空"`
+	TaskType            constant.JobTaskTypeEnum `json:"taskType" description:"taskType 不能为空"`
+	GroupName           string                   `json:"groupName" description:"group 不能为空"`
+	ParallelNum         int                      `json:"parallelNum" description:"parallelNum 不能为空"`
+	ExecutorType        int                      `json:"executorType" description:"executorType 不能为空"`
+	ExecutorInfo        string                   `json:"executorInfo" description:"executorInfo 不能为空"`
+	ExecutorTimeout     int                      `json:"executorTimeout" description:"executorTimeout 不能为空"`
+	ArgsStr             string                   `json:"argsStr,omitempty"`
+	ShardingTotal       int                      `json:"shardingTotal,omitempty"`
+	ShardingIndex       int                      `json:"shardingIndex,omitempty"`
+	WorkflowTaskBatchId int64                    `json:"workflowTaskBatchId,omitempty"`
+	WorkflowNodeId      int64                    `json:"workflowNodeId,omitempty"`
+	RetryCount          int                      `json:"retryCount,omitempty"`
+	RetryScene          int                      `json:"retryScene,omitempty" description:"重试场景 auto、manual"`
+	IsRetry             bool                     `json:"isRetry" description:"是否是重试流量"`
+	WfContext           string                   `json:"wfContext" description:"工作流上下文"`
+	TaskName            string                   `json:"taskName"`
+	MrStage             int                      `json:"mrStage"`
 }
 
 type DispatchJobArgs struct {
-	NamespaceId         string          `json:"namespaceId" description:"namespaceId 不能为空"`
-	JobId               int             `json:"jobId" description:"jobId 不能为空"`
-	TaskBatchId         int             `json:"taskBatchId" description:"taskBatchId 不能为空"`
-	TaskId              int             `json:"taskId" description:"taskId 不能为空"`
-	TaskType            JobTaskTypeEnum `json:"taskType" description:"taskType 不能为空"`
-	GroupName           string          `json:"groupName" description:"group 不能为空"`
-	ParallelNum         int             `json:"parallelNum" description:"parallelNum 不能为空"`
-	ExecutorType        int             `json:"executorType" description:"executorType 不能为空"`
-	ExecutorInfo        string          `json:"executorInfo" description:"executorInfo 不能为空"`
-	ExecutorTimeout     int             `json:"executorTimeout" description:"executorTimeout 不能为空"`
-	ArgsStr             *string         `json:"argsStr,omitempty"`
-	ShardingTotal       *int            `json:"shardingTotal,omitempty"`
-	ShardingIndex       *int            `json:"shardingIndex,omitempty"`
-	WorkflowTaskBatchId *int            `json:"workflowTaskBatchId,omitempty"`
-	WorkflowNodeId      *int            `json:"workflowNodeId,omitempty"`
-	RetryCount          *int            `json:"retryCount,omitempty"`
-	RetryScene          *int            `json:"retryScene,omitempty" description:"重试场景 auto、manual"`
-	IsRetry             bool            `json:"isRetry" description:"是否是重试流量"`
+	NamespaceId         string                   `json:"namespaceId" description:"namespaceId 不能为空"`
+	JobId               int                      `json:"jobId" description:"jobId 不能为空"`
+	TaskBatchId         int                      `json:"taskBatchId" description:"taskBatchId 不能为空"`
+	TaskId              int                      `json:"taskId" description:"taskId 不能为空"`
+	TaskType            constant.JobTaskTypeEnum `json:"taskType" description:"taskType 不能为空"`
+	GroupName           string                   `json:"groupName" description:"group 不能为空"`
+	ParallelNum         int                      `json:"parallelNum" description:"parallelNum 不能为空"`
+	ExecutorType        int                      `json:"executorType" description:"executorType 不能为空"`
+	ExecutorInfo        string                   `json:"executorInfo" description:"executorInfo 不能为空"`
+	ExecutorTimeout     int                      `json:"executorTimeout" description:"executorTimeout 不能为空"`
+	ArgsStr             *string                  `json:"argsStr,omitempty"`
+	ShardingTotal       *int                     `json:"shardingTotal,omitempty"`
+	ShardingIndex       *int                     `json:"shardingIndex,omitempty"`
+	WorkflowTaskBatchId *int                     `json:"workflowTaskBatchId,omitempty"`
+	WorkflowNodeId      *int                     `json:"workflowNodeId,omitempty"`
+	RetryCount          *int                     `json:"retryCount,omitempty"`
+	RetryScene          *int                     `json:"retryScene,omitempty" description:"重试场景 auto、manual"`
+	IsRetry             bool                     `json:"isRetry" description:"是否是重试流量"`
 }
 
 type StopJobRequest struct {
