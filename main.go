@@ -274,7 +274,7 @@ func main() {
 
 	// ToDo 模拟远程调用endpoint
 	jbEndPoint.DispatchJob(job.DispatchJobRequest{NamespaceId: "12", JobId: 1,
-		TaskType: constant.CLUSTER, ExecutorType: 3, ExecutorInfo: "testJobExecutor"})
+		TaskType: constant.CLUSTER, ExecutorType: 3, ExecutorInfo: "testJobExecutor", ExecutorTimeout: 1})
 
 	//testJobExecutor, _ := manager.GetExecutor("testJobExecutor")
 

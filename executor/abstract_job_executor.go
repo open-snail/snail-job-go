@@ -1,11 +1,13 @@
 package executor
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"snail_job_go/constant"
 	"snail_job_go/dto"
 	"snail_job_go/job"
+	"time"
 )
 
 type JobStrategy interface {
@@ -22,9 +24,15 @@ func (executor *AbstractJobExecutor) BindJobStrategy(child JobStrategy) {
 }
 
 // JobExecute 模板类
-func (executor *AbstractJobExecutor) JobExecute(context dto.JobContext) {
+func (executor *AbstractJobExecutor) JobExecute(jobContext dto.JobContext) {
 
 	resultChan := make(chan dto.ExecuteResult)
+	// Add a stop task to the timer to stop execution upon timeout
+	timer := time.NewTimer(time.Duration(jobContext.ExecutorTimeout) * time.Second)
+	defer timer.Stop()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	go func() {
 		defer func() {
@@ -36,7 +44,7 @@ func (executor *AbstractJobExecutor) JobExecute(context dto.JobContext) {
 			}
 		}()
 
-		jobArgs := executor.buildJobArgsBasedOnType(context)
+		jobArgs := executor.buildJobArgsBasedOnType(jobContext)
 		//jobArgs.WfContext = jobContext.WfContext
 		//jobArgs.ChangeWfContext = jobContext.ChangeWfContext
 		//jobArgs.JobId = jobContext.JobId
@@ -47,10 +55,13 @@ func (executor *AbstractJobExecutor) JobExecute(context dto.JobContext) {
 
 	// Wait for the result or timeout
 	select {
-	//case <-timer.C:
-	//	cancel() // Cancel the job execution
+	case <-ctx.Done():
+		job.LocalLog.Warnf(fmt.Sprintf("AbstractJobExecutor 任务被取消. jobId: [%d]", jobContext.JobId))
+	case <-timer.C:
+		cancel() // Cancel the job execution
+		job.LocalLog.Warnf(fmt.Sprintf("AbstractJobExecutor 任务执行超时. jobId: [%d]", jobContext.JobId))
 	case result := <-resultChan:
-		job.LocalLog.Info(fmt.Sprintf("AbstractJobExecutor 执行了 JobExecute. jobId: [%d] result:[%s]", context.JobId, result.Message))
+		job.LocalLog.Info(fmt.Sprintf("AbstractJobExecutor 执行了 JobExecute. jobId: [%d] result:[%s]", jobContext.JobId, result.Message))
 		// 回调处理
 		callback := &JobExecutorFutureCallback{}
 		callback.onCallback(&result)
