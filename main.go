@@ -271,10 +271,13 @@ func main() {
 
 	//// 注册示例执行器
 	manager.Register("testJobExecutor", demo.NewTestJobExecutor())
+	manager.Register("testMapJobExecutor", demo.NewTestMapJobExecutor())
+	manager.Register("testMapReduceJobExecutor", demo.NewTestMapReduceJobExecutor())
 
 	// ToDo 模拟远程调用endpoint
 	jbEndPoint.DispatchJob(job.DispatchJobRequest{NamespaceId: "12", JobId: 1,
-		TaskType: constant.CLUSTER, ExecutorType: 3, ExecutorInfo: "testJobExecutor", ExecutorTimeout: 1})
+		TaskType: constant.MAP, ExecutorType: 3, ExecutorInfo: "testMapReduceJobExecutor",
+		ExecutorTimeout: 3, TaskName: "ROOT"})
 
 	//testJobExecutor, _ := manager.GetExecutor("testJobExecutor")
 

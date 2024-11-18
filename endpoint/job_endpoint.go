@@ -38,17 +38,17 @@ func (e *JobEndPoint) DispatchJob(dispatchJob job.DispatchJobRequest) dto.Result
 
 	// Select executor
 	//var jobExecutor executor.IJobExecutor
-	//if dispatchJob.TaskType == constant.MAP {
-	//	// Map
-	//	//jobExecutor = executor.NewMapJobExecutor()
-	//} else if dispatchJob.TaskType == constant.MAP {
-	//	// Map Reduce
-	//	//jobExecutor = executor.NewMapReduceJobExecutor(e.manager)
-	//} else {
-	//	// 集群、 广播、静态分片
-	//	//jobExecutor = executor.NewStandardJobExecutor(e.manager)
-	//	jobExecutor.JobExecute(jobContext)
-	//}
+	if dispatchJob.TaskType == constant.MAP {
+		// Map
+		//jobExecutor = executor.NewMapJobExecutor()
+	} else if dispatchJob.TaskType == constant.MAP {
+		// Map Reduce
+		//jobExecutor = executor.NewMapReduceJobExecutor(e.manager)
+	} else {
+		// 集群、 广播、静态分片
+		//jobExecutor = executor.NewStandardJobExecutor(e.manager)
+		//jobExecute.JobExecute(jobContext)
+	}
 
 	// 集群、 广播、静态分片 直接执行方法
 	jobExecute.JobExecute(jobContext)
