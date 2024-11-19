@@ -45,10 +45,6 @@ func (executor *AbstractJobExecutor) JobExecute(jobContext dto.JobContext) {
 		}()
 
 		jobArgs := executor.buildJobArgsBasedOnType(jobContext)
-		//jobArgs.WfContext = jobContext.WfContext
-		//jobArgs.ChangeWfContext = jobContext.ChangeWfContext
-		//jobArgs.JobId = jobContext.JobId
-
 		// 执行任务
 		resultChan <- executor.Strategy.DoJobExecute(jobArgs)
 	}()
@@ -73,7 +69,7 @@ func (executor *AbstractJobExecutor) buildJobArgsBasedOnType(jobContext dto.JobC
 	switch jobContext.TaskType {
 	case constant.SHARDING:
 		jobArgs = executor.buildShardingJobArgs(jobContext)
-	case constant.MAP_REDUCE:
+	case constant.MAP_REDUCE, constant.MAP:
 		if jobContext.MrStage == constant.MAP_STAGE {
 			jobArgs = executor.buildMapJobArgs(jobContext)
 		} else if jobContext.MrStage == constant.REDUCE_STAGE {

@@ -20,7 +20,7 @@ type TestJobExecutor struct {
 // NewTestJobExecutor 创建对象
 func NewTestJobExecutor() *TestJobExecutor {
 	executor := &TestJobExecutor{}
-	executor.BindJobStrategy(executor)
+	//executor.BindJobStrategy(executor)
 	return executor
 }
 

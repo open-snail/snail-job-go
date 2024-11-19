@@ -17,13 +17,6 @@ type Test2JobExecutor struct {
 	executor.AbstractJobExecutor
 }
 
-// NewTestJobExecutor 创建对象
-func NewTest2JobExecutor() *Test2JobExecutor {
-	executor := &Test2JobExecutor{}
-	executor.BindJobStrategy(executor)
-	return executor
-}
-
 func (executor *Test2JobExecutor) DoJobExecute(jobArgs dto.IJobArgs) dto.ExecuteResult {
 	job.LocalLog.Info(fmt.Sprintf("TestJobExecutor 开始执行 DoJobExecute. jobId: [%d] now:[%s]", jobArgs.GetJobId(), time.Now().String()))
 	time.Sleep(3 * time.Second)

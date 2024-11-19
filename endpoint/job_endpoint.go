@@ -4,6 +4,7 @@ import (
 	"log"
 	"snail_job_go/constant"
 	"snail_job_go/dto"
+	"snail_job_go/executor"
 	"snail_job_go/job"
 	"snail_job_go/register"
 )
@@ -36,18 +37,18 @@ func (e *JobEndPoint) DispatchJob(dispatchJob job.DispatchJobRequest) dto.Result
 
 	jobContext := buildJobContext(dispatchJob)
 
-	// Select executor
-	//var jobExecutor executor.IJobExecutor
+	jobStrategy := jobExecute.(executor.JobStrategy)
+	jobStrategy.BindJobStrategy(jobStrategy)
+
+	// bing executor
 	if dispatchJob.TaskType == constant.MAP {
-		// Map
-		//jobExecutor = executor.NewMapJobExecutor()
-	} else if dispatchJob.TaskType == constant.MAP {
-		// Map Reduce
-		//jobExecutor = executor.NewMapReduceJobExecutor(e.manager)
-	} else {
-		// 集群、 广播、静态分片
-		//jobExecutor = executor.NewStandardJobExecutor(e.manager)
-		//jobExecute.JobExecute(jobContext)
+		mapExecute := jobExecute.(executor.MapExecute)
+		mapExecute.BindMapExecute(mapExecute)
+	} else if dispatchJob.TaskType == constant.MAP_REDUCE {
+		mapExecute := jobExecute.(executor.MapExecute)
+		mapExecute.BindMapExecute(mapExecute)
+		mapReduceExecute := jobExecute.(executor.MapReduceExecute)
+		mapReduceExecute.BindMapReduceExecute(mapReduceExecute)
 	}
 
 	// 集群、 广播、静态分片 直接执行方法

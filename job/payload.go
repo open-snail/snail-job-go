@@ -32,27 +32,27 @@ const (
 )
 
 type DispatchJobRequest struct {
-	NamespaceId         string                   `json:"namespaceId" description:"namespaceId 不能为空"`
-	JobId               int64                    `json:"jobId" description:"jobId 不能为空"`
-	TaskBatchId         int64                    `json:"taskBatchId" description:"taskBatchId 不能为空"`
-	TaskId              int64                    `json:"taskId" description:"taskId 不能为空"`
-	TaskType            constant.JobTaskTypeEnum `json:"taskType" description:"taskType 不能为空"`
-	GroupName           string                   `json:"groupName" description:"group 不能为空"`
-	ParallelNum         int                      `json:"parallelNum" description:"parallelNum 不能为空"`
-	ExecutorType        int                      `json:"executorType" description:"executorType 不能为空"`
-	ExecutorInfo        string                   `json:"executorInfo" description:"executorInfo 不能为空"`
-	ExecutorTimeout     int                      `json:"executorTimeout" description:"executorTimeout 不能为空"`
-	ArgsStr             string                   `json:"argsStr,omitempty"`
-	ShardingTotal       int                      `json:"shardingTotal,omitempty"`
-	ShardingIndex       int                      `json:"shardingIndex,omitempty"`
-	WorkflowTaskBatchId int64                    `json:"workflowTaskBatchId,omitempty"`
-	WorkflowNodeId      int64                    `json:"workflowNodeId,omitempty"`
-	RetryCount          int                      `json:"retryCount,omitempty"`
-	RetryScene          int                      `json:"retryScene,omitempty" description:"重试场景 auto、manual"`
-	IsRetry             bool                     `json:"isRetry" description:"是否是重试流量"`
-	WfContext           string                   `json:"wfContext" description:"工作流上下文"`
-	TaskName            string                   `json:"taskName"`
-	MrStage             int                      `json:"mrStage"`
+	NamespaceId         string                      `json:"namespaceId" description:"namespaceId 不能为空"`
+	JobId               int64                       `json:"jobId" description:"jobId 不能为空"`
+	TaskBatchId         int64                       `json:"taskBatchId" description:"taskBatchId 不能为空"`
+	TaskId              int64                       `json:"taskId" description:"taskId 不能为空"`
+	TaskType            constant.JobTaskTypeEnum    `json:"taskType" description:"taskType 不能为空"`
+	GroupName           string                      `json:"groupName" description:"group 不能为空"`
+	ParallelNum         int                         `json:"parallelNum" description:"parallelNum 不能为空"`
+	ExecutorType        int                         `json:"executorType" description:"executorType 不能为空"`
+	ExecutorInfo        string                      `json:"executorInfo" description:"executorInfo 不能为空"`
+	ExecutorTimeout     int                         `json:"executorTimeout" description:"executorTimeout 不能为空"`
+	ArgsStr             string                      `json:"argsStr,omitempty"`
+	ShardingTotal       int                         `json:"shardingTotal,omitempty"`
+	ShardingIndex       int                         `json:"shardingIndex,omitempty"`
+	WorkflowTaskBatchId int64                       `json:"workflowTaskBatchId,omitempty"`
+	WorkflowNodeId      int64                       `json:"workflowNodeId,omitempty"`
+	RetryCount          int                         `json:"retryCount,omitempty"`
+	RetryScene          int                         `json:"retryScene,omitempty" description:"重试场景 auto、manual"`
+	IsRetry             bool                        `json:"isRetry" description:"是否是重试流量"`
+	WfContext           string                      `json:"wfContext" description:"工作流上下文"`
+	TaskName            string                      `json:"taskName"`
+	MrStage             constant.MapReduceStageEnum `json:"mrStage"`
 }
 
 type DispatchJobArgs struct {

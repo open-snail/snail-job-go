@@ -17,15 +17,6 @@ type TestMapReduceJobExecutor struct {
 	executor.AbstractMapReduceJobExecutor
 }
 
-// NewTestMapJobExecutor 创建对象
-func NewTestMapReduceJobExecutor() *TestMapReduceJobExecutor {
-	executor := &TestMapReduceJobExecutor{}
-	executor.BindMapReduceExecute(executor)
-	executor.BindMapExecute(executor)
-	executor.BindJobStrategy(executor)
-	return executor
-}
-
 func (executor *TestMapReduceJobExecutor) DoJobMapExecute(mpArgs *dto.MapArgs) dto.ExecuteResult {
 
 	job.LocalLog.Info(fmt.Sprintf("TestMapReduceJobExecutor 开始执行 DoJobMapExecute. jobId: [%d] TaskName:[%s] now:[%s]", mpArgs.GetJobId(), mpArgs.TaskName, time.Now().String()))

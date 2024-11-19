@@ -1,6 +1,9 @@
 package executor
 
-import "snail_job_go/dto"
+import (
+	"snail_job_go/dto"
+	"snail_job_go/util"
+)
 
 type MapExecute interface {
 	DoJobMapExecute(args *dto.MapArgs) dto.ExecuteResult
@@ -13,13 +16,13 @@ type AbstractMapJobExecutor struct {
 }
 
 func (executor *AbstractMapJobExecutor) BindMapExecute(child MapExecute) {
-	//executor.BindJobStrategy(executor)
 	executor.Execute = child
 }
 
 // DoJobExecute 模板类
 func (executor *AbstractMapJobExecutor) DoJobExecute(jobArgs dto.IJobArgs) dto.ExecuteResult {
-	// todo 怎么把jobArgs 转成 mapArgs
-	executor.Execute.DoJobMapExecute(&dto.MapArgs{})
+	var mapArgs dto.MapArgs
+	util.ToObj(util.ToByteArr(jobArgs), mapArgs)
+	executor.Execute.DoJobMapExecute(&mapArgs)
 	return dto.ExecuteResult{}
 }
