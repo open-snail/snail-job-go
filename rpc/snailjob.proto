@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "opensnail.org/snail-job/snail-job-go/rpc";
+option go_package = "opensnail.com/snail-job/snail-job-go/rpc";
 
 message Metadata {
   string uri = 3;

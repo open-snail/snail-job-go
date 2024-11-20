@@ -1,8 +1,8 @@
 package executor
 
 import (
-	"snail_job_go/dto"
-	"snail_job_go/util"
+	"opensnail.com/snail-job/snail-job-go/dto"
+	"opensnail.com/snail-job/snail-job-go/util"
 )
 
 type MapExecute interface {

@@ -2,18 +2,18 @@ package endpoint
 
 import (
 	"log"
-	"snail_job_go/constant"
-	"snail_job_go/dto"
-	"snail_job_go/executor"
-	"snail_job_go/job"
-	"snail_job_go/register"
+	snailjob "opensnail.com/snail-job/snail-job-go"
+	"opensnail.com/snail-job/snail-job-go/constant"
+	"opensnail.com/snail-job/snail-job-go/dto"
+	"opensnail.com/snail-job/snail-job-go/executor"
+	"opensnail.com/snail-job/snail-job-go/job"
 )
 
 type JobEndPoint struct {
-	manager *register.ExecutorManager
+	manager *snailjob.Executor
 }
 
-func Init(manager *register.ExecutorManager) *JobEndPoint {
+func Init(manager *snailjob.Executor) *JobEndPoint {
 	return &JobEndPoint{manager}
 }
 

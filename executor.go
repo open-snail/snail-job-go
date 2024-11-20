@@ -2,6 +2,8 @@ package snailjob
 
 import (
 	"fmt"
+	jobExecutor "opensnail.com/snail-job/snail-job-go/executor"
+	"opensnail.com/snail-job/snail-job-go/job"
 	"sync"
 )
 
@@ -14,41 +16,39 @@ type Options struct {
 	GroupName  string
 }
 
-// TaskFunc 任务执行函数
-type TaskFunc func() (string, error)
-
-type executor struct {
+type Executor struct {
 	factory   LoggerFactory
 	logger    Logger
-	executors map[string]TaskFunc
+	executors map[string]jobExecutor.IJobExecutor
 	lock      sync.Mutex
 }
 
-func NewExecutor(opts *Options, factory LoggerFactory) *executor {
+func NewExecutor(opts *Options, factory LoggerFactory) *Executor {
 
 	// factory *LoggerFactory = logger == nil ? NewLoggerFactory():logger
-	return &executor{
+	return &Executor{
 		factory:   factory,
 		logger:    factory.GetLogger("executor"),
-		executors: make(map[string]TaskFunc),
+		executors: make(map[string]jobExecutor.IJobExecutor),
 	}
 }
 
-func (e *executor) GetLoggerFactory() LoggerFactory {
+func (e *Executor) GetLoggerFactory() LoggerFactory {
 	return e.factory
 }
 
-func (e *executor) Run() {
-
+func (e *Executor) Run() {
+	e.logger.Info("%s", "")
 }
 
-func (e *executor) Init() error {
+func (e *Executor) Init() error {
 
 	e.logger.Info("%s", "Init executor")
 	return nil
 }
 
-func (e *executor) Register(name string, fun TaskFunc) {
+// Register 注册job执行器入门
+func (e *Executor) Register(name string, executor jobExecutor.IJobExecutor) {
 	e.lock.Lock()
 	defer e.lock.Unlock()
 
@@ -56,6 +56,14 @@ func (e *executor) Register(name string, fun TaskFunc) {
 		panic(fmt.Sprintf("Executor [%s] already registered", name))
 	}
 
-	e.executors[name] = fun
-	e.logger.Info("Registered executor: %s", name)
+	e.executors[name] = executor
+	job.LocalLog.Info(fmt.Sprintf("Registered executor: %s", name))
+}
+
+func (e *Executor) GetExecutor(name string) (jobExecutor.IJobExecutor, error) {
+	executor, exists := e.executors[name]
+	if !exists {
+		return nil, fmt.Errorf("Executor [%s] not found", name)
+	}
+	return executor, nil
 }

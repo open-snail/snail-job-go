@@ -4,15 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"flag"
-	"fmt"
 	"log"
-	"net"
+	snailjob "opensnail.com/snail-job/snail-job-go"
 	"strconv"
 	"time"
 
 	"math/rand"
 
-	pb "opensnail.org/snail-job/snail-job-go/rpc"
+	pb "opensnail.com/snail-job/snail-job-go/rpc"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -31,7 +30,7 @@ var (
 	port = flag.Int("port", 17889, "The server port")
 )
 
-// 定义 SnailJobRequest 和 Metadata 的数据结构
+// SnailJobRequest 定义 SnailJobRequest 和 Metadata 的数据结构
 type SnailJobRequest struct {
 	ReqId int64
 }
@@ -50,12 +49,12 @@ func GenerateReqID() int64 {
 
 var snailHostID = GenerateHostId(20)
 
-// 定义构建 SnailJobRequest 的方法
+// BuildRequest 定义构建 SnailJobRequest 的方法
 func BuildRequest(args []interface{}) SnailJobRequest {
 	return SnailJobRequest{ReqId: GenerateReqID()}
 }
 
-// 发送请求到程服务器
+// SendToServer 发送请求到程服务器
 func SendToServer(uri string, payload interface{}, jobName string) StatusEnum {
 	// 构建请求
 	request := BuildRequest([]interface{}{payload})
@@ -142,17 +141,34 @@ func (s *server) UnaryRequest(_ context.Context, in *pb.GrpcSnailJobRequest) (*p
 	return &pb.GrpcResult{ReqId: in.ReqId, Status: 1, Message: "", Data: "true"}, nil
 }
 
-func main() {
-	flag.Parse()
-	go SendHeartbeat()
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
-	s := grpc.NewServer()
-	pb.RegisterUnaryRequestServer(s, &server{})
-	log.Printf("server listening at %v", lis.Addr())
-	if err := s.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
+// todo 未完成
+type GrpcServer struct {
+	config snailjob.SysConfig
+}
+
+func (receiver GrpcServer) name() {
+
+}
+
+func (receiver GrpcServer) SendHeartbeat() {
+	for {
+		SendToServer("/beat", []string{"PING"}, "发送心跳")
+		time.Sleep(time.Second * 30)
 	}
 }
+
+//
+//func main() {
+//	flag.Parse()
+//	go SendHeartbeat()
+//	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
+//	if err != nil {
+//		log.Fatalf("failed to listen: %v", err)
+//	}
+//	s := grpc.NewServer()
+//	pb.RegisterUnaryRequestServer(s, &server{})
+//	log.Printf("server listening at %v", lis.Addr())
+//	if err := s.Serve(lis); err != nil {
+//		log.Fatalf("failed to serve: %v", err)
+//	}
+//}

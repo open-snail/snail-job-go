@@ -2,9 +2,9 @@ package demo
 
 import (
 	"fmt"
-	"snail_job_go/dto"
-	"snail_job_go/executor"
-	"snail_job_go/job"
+	"opensnail.com/snail-job/snail-job-go/dto"
+	"opensnail.com/snail-job/snail-job-go/executor"
+	"opensnail.com/snail-job/snail-job-go/job"
 	"time"
 )
 

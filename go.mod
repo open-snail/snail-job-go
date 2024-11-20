@@ -1,4 +1,4 @@
-module opensnail.org/snail-job/snail-job-go
+module opensnail.com/snail-job/snail-job-go
 
 go 1.22.7
 
@@ -8,6 +8,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	google.golang.org/grpc v1.68.0
 	google.golang.org/protobuf v1.35.2
+	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
 )
 
 require (

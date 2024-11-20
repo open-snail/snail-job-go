@@ -6,9 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"snail_job_go/constant"
-	"snail_job_go/dto"
-	"snail_job_go/job"
+	"opensnail.com/snail-job/snail-job-go/constant"
+	"opensnail.com/snail-job/snail-job-go/dto"
+	"opensnail.com/snail-job/snail-job-go/job"
 )
 
 type JobExecutorFutureCallback struct {

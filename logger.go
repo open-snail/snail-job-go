@@ -38,12 +38,12 @@ type LoggerFactory interface {
 	GetLogger(name string) Logger
 }
 
-type loggerfactory struct {
+type loggerFactory struct {
 	lock    sync.Mutex
 	loggers map[string]Logger
 }
 
-func (e *loggerfactory) GetLogger(name string) Logger {
+func (e *loggerFactory) GetLogger(name string) Logger {
 	e.lock.Lock()
 	defer e.lock.Unlock()
 	if e.loggers[name] == nil {
@@ -58,7 +58,7 @@ func (e *loggerfactory) GetLogger(name string) Logger {
 }
 
 func NewLoggerFactory() LoggerFactory {
-	return &loggerfactory{
+	return &loggerFactory{
 		loggers: make(map[string]Logger),
 	}
 }

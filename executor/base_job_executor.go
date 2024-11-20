@@ -4,11 +4,16 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"snail_job_go/constant"
-	"snail_job_go/dto"
-	"snail_job_go/job"
+	"opensnail.com/snail-job/snail-job-go/constant"
+	"opensnail.com/snail-job/snail-job-go/dto"
+	"opensnail.com/snail-job/snail-job-go/job"
 	"time"
 )
+
+// IJobExecutor 执行器接口
+type IJobExecutor interface {
+	JobExecute(context dto.JobContext)
+}
 
 type JobStrategy interface {
 	DoJobExecute(dto.IJobArgs) dto.ExecuteResult

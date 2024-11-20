@@ -1,7 +1,7 @@
 package dto
 
 import (
-	"snail_job_go/constant"
+	"opensnail.com/snail-job/snail-job-go/constant"
 	"sync"
 )
 

@@ -2,15 +2,11 @@ package demo
 
 import (
 	"fmt"
-	"snail_job_go/dto"
-	"snail_job_go/executor"
-	"snail_job_go/job"
+	"opensnail.com/snail-job/snail-job-go/dto"
+	"opensnail.com/snail-job/snail-job-go/executor"
+	"opensnail.com/snail-job/snail-job-go/job"
 	"time"
 )
-
-/**
-  todo 待讨论Go的是支持结构体还是直接执行方法方式
-*/
 
 // TestMapJobExecutor 这是一个测试类
 type TestMapJobExecutor struct {
