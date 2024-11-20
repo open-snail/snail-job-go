@@ -1,4 +1,4 @@
-module snail_job_go
+module opensnail.org/snail-job/snail-job-go
 
 go 1.22.5
 
