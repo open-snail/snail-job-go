@@ -1,4 +1,4 @@
-package executor
+package job
 
 import (
 	"opensnail.com/snail-job/snail-job-go/dto"
@@ -11,17 +11,17 @@ type MapReduceExecute interface {
 	BindMapReduceExecute(child MapReduceExecute)
 }
 
-type AbstractMapReduceJobExecutor struct {
-	AbstractMapJobExecutor
+type BaseMapReduceJobExecutor struct {
+	BaseMapJobExecutor
 	MrExecute MapReduceExecute
 }
 
-func (executor *AbstractMapReduceJobExecutor) BindMapReduceExecute(child MapReduceExecute) {
+func (executor *BaseMapReduceJobExecutor) BindMapReduceExecute(child MapReduceExecute) {
 	executor.MrExecute = child
 }
 
 // DoJobExecute 模板类
-func (executor *AbstractMapReduceJobExecutor) DoJobExecute(jobArgs dto.IJobArgs) dto.ExecuteResult {
+func (executor *BaseMapReduceJobExecutor) DoJobExecute(jobArgs dto.IJobArgs) dto.ExecuteResult {
 	// 将 User 转换为 JSON
 	var mapArgs dto.MapArgs
 	util.ToObj(util.ToByteArr(jobArgs), mapArgs)
@@ -32,6 +32,6 @@ func (executor *AbstractMapReduceJobExecutor) DoJobExecute(jobArgs dto.IJobArgs)
 	return dto.ExecuteResult{}
 }
 
-func (executor *AbstractMapReduceJobExecutor) DoJobMapExecute(args *dto.MapArgs) dto.ExecuteResult {
+func (executor *BaseMapReduceJobExecutor) DoJobMapExecute(args *dto.MapArgs) dto.ExecuteResult {
 	return executor.Execute.DoJobMapExecute(args)
 }

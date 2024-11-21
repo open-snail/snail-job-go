@@ -1,4 +1,4 @@
-package executor
+package job
 
 import (
 	"context"
@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"opensnail.com/snail-job/snail-job-go/constant"
 	"opensnail.com/snail-job/snail-job-go/dto"
-	"opensnail.com/snail-job/snail-job-go/job"
 	"time"
 )
 
@@ -18,18 +17,28 @@ type IJobExecutor interface {
 type JobStrategy interface {
 	DoJobExecute(dto.IJobArgs) dto.ExecuteResult
 	BindJobStrategy(child JobStrategy)
+	SetClient(client SnailJobClient)
 }
 
-type AbstractJobExecutor struct {
+type BaseJobExecutor struct {
 	Strategy JobStrategy
+	client   SnailJobClient
 }
 
-func (executor *AbstractJobExecutor) BindJobStrategy(child JobStrategy) {
+func (executor *BaseJobExecutor) BindJobStrategy(child JobStrategy) {
 	executor.Strategy = child
 }
 
+func (executor *BaseJobExecutor) SetClient(client SnailJobClient) {
+	executor.client = client
+}
+
+func (executor *BaseJobExecutor) GetClient(client SnailJobClient) {
+	executor.client = client
+}
+
 // JobExecute 模板类
-func (executor *AbstractJobExecutor) JobExecute(jobContext dto.JobContext) {
+func (executor *BaseJobExecutor) JobExecute(jobContext dto.JobContext) {
 
 	resultChan := make(chan dto.ExecuteResult)
 	// Add a stop task to the timer to stop execution upon timeout
@@ -43,7 +52,7 @@ func (executor *AbstractJobExecutor) JobExecute(jobContext dto.JobContext) {
 		defer func() {
 			err := recover()
 			if err != nil {
-				job.LocalLog.Error(err)
+				LocalLog.Error(err)
 				// 失败捕获异常
 				resultChan <- *dto.Failure(err, "执行失败")
 			}
@@ -57,19 +66,19 @@ func (executor *AbstractJobExecutor) JobExecute(jobContext dto.JobContext) {
 	// Wait for the result or timeout
 	select {
 	case <-ctx.Done():
-		job.LocalLog.Warnf(fmt.Sprintf("AbstractJobExecutor 任务被取消. jobId: [%d]", jobContext.JobId))
+		LocalLog.Warnf(fmt.Sprintf("BaseJobExecutor 任务被取消. jobId: [%d]", jobContext.JobId))
 	case <-timer.C:
 		cancel() // Cancel the job execution
-		job.LocalLog.Warnf(fmt.Sprintf("AbstractJobExecutor 任务执行超时. jobId: [%d]", jobContext.JobId))
+		LocalLog.Warnf(fmt.Sprintf("BaseJobExecutor 任务执行超时. jobId: [%d]", jobContext.JobId))
 	case result := <-resultChan:
-		job.LocalLog.Info(fmt.Sprintf("AbstractJobExecutor 执行了 JobExecute. jobId: [%d] result:[%s]", jobContext.JobId, result.Message))
+		LocalLog.Info(fmt.Sprintf("BaseJobExecutor 执行了 JobExecute. jobId: [%d] result:[%s]", jobContext.JobId, result.Message))
 		// 回调处理
 		callback := &JobExecutorFutureCallback{}
-		callback.onCallback(&result)
+		callback.onCallback(executor.client, &result)
 	}
 }
 
-func (executor *AbstractJobExecutor) buildJobArgsBasedOnType(jobContext dto.JobContext) dto.IJobArgs {
+func (executor *BaseJobExecutor) buildJobArgsBasedOnType(jobContext dto.JobContext) dto.IJobArgs {
 	var jobArgs dto.IJobArgs
 	switch jobContext.TaskType {
 	case constant.SHARDING:
@@ -89,7 +98,7 @@ func (executor *AbstractJobExecutor) buildJobArgsBasedOnType(jobContext dto.JobC
 	return jobArgs
 }
 
-func (executor *AbstractJobExecutor) buildBasicJobArgs(jobContext dto.JobContext) dto.IJobArgs {
+func (executor *BaseJobExecutor) buildBasicJobArgs(jobContext dto.JobContext) dto.IJobArgs {
 	return &dto.JobArgs{
 		JobParams:    jobContext.JobArgsHolder.JobParams,
 		ExecutorInfo: jobContext.ExecutorInfo,
@@ -98,7 +107,7 @@ func (executor *AbstractJobExecutor) buildBasicJobArgs(jobContext dto.JobContext
 }
 
 // Build sharding job args
-func (executor *AbstractJobExecutor) buildShardingJobArgs(jobContext dto.JobContext) dto.IJobArgs {
+func (executor *BaseJobExecutor) buildShardingJobArgs(jobContext dto.JobContext) dto.IJobArgs {
 	args := dto.ShardingJobArgs{
 		ShardingIndex: jobContext.ShardingIndex,
 		ShardingTotal: jobContext.ShardingTotal,
@@ -109,7 +118,7 @@ func (executor *AbstractJobExecutor) buildShardingJobArgs(jobContext dto.JobCont
 }
 
 // Build map job args
-func (executor *AbstractJobExecutor) buildMapJobArgs(jobContext dto.JobContext) dto.IJobArgs {
+func (executor *BaseJobExecutor) buildMapJobArgs(jobContext dto.JobContext) dto.IJobArgs {
 	args := dto.MapArgs{
 		MapResult: jobContext.JobArgsHolder.Maps,
 		TaskName:  jobContext.TaskName,
@@ -123,7 +132,7 @@ func (executor *AbstractJobExecutor) buildMapJobArgs(jobContext dto.JobContext) 
 }
 
 // Build reduce job args
-func (executor *AbstractJobExecutor) buildReduceJobArgs(jobContext dto.JobContext) dto.IJobArgs {
+func (executor *BaseJobExecutor) buildReduceJobArgs(jobContext dto.JobContext) dto.IJobArgs {
 	args := dto.ReduceArgs{}
 
 	args.JobParams = jobContext.JobArgsHolder.JobParams
@@ -161,7 +170,7 @@ func parseMapResult(maps interface{}) []interface{} {
 }
 
 // Build merge reduce job args
-func (executor *AbstractJobExecutor) buildMergeReduceJobArgs(jobContext dto.JobContext) dto.IJobArgs {
+func (executor *BaseJobExecutor) buildMergeReduceJobArgs(jobContext dto.JobContext) dto.IJobArgs {
 	args := dto.MergeReduceArgs{}
 	args.JobParams = jobContext.JobArgsHolder.JobParams
 	args.ExecutorInfo = jobContext.ExecutorInfo

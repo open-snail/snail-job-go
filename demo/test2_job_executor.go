@@ -3,7 +3,6 @@ package demo
 import (
 	"fmt"
 	"opensnail.com/snail-job/snail-job-go/dto"
-	"opensnail.com/snail-job/snail-job-go/executor"
 	"opensnail.com/snail-job/snail-job-go/job"
 	"time"
 )
@@ -14,7 +13,7 @@ import (
 
 // Test2JobExecutor 这是一个测试类
 type Test2JobExecutor struct {
-	executor.AbstractJobExecutor
+	job.BaseJobExecutor
 }
 
 func (executor *Test2JobExecutor) DoJobExecute(jobArgs dto.IJobArgs) dto.ExecuteResult {

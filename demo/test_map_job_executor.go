@@ -3,14 +3,13 @@ package demo
 import (
 	"fmt"
 	"opensnail.com/snail-job/snail-job-go/dto"
-	"opensnail.com/snail-job/snail-job-go/executor"
 	"opensnail.com/snail-job/snail-job-go/job"
 	"time"
 )
 
 // TestMapJobExecutor 这是一个测试类
 type TestMapJobExecutor struct {
-	executor.AbstractMapJobExecutor
+	job.BaseMapJobExecutor
 }
 
 // NewTestMapJobExecutor 创建对象

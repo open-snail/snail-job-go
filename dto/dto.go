@@ -3,7 +3,18 @@ package dto
 import (
 	"opensnail.com/snail-job/snail-job-go/constant"
 	"sync"
+	"time"
 )
+
+type Options struct {
+	ServerHost string
+	ServerPort string
+	HostIP     string
+	HostPort   string
+	Namespace  string
+	GroupName  string
+	Token      string
+}
 
 type DispatchJobResultRequest struct {
 	TaskBatchId         int64
@@ -156,7 +167,7 @@ type ReduceArgs struct {
 }
 
 type Result struct {
-	Status  int         `json:"status"`
+	Status  int32       `json:"status"`
 	Message string      `json:"message"`
 	Data    interface{} `json:"result"`
 }
@@ -165,4 +176,110 @@ type ShardingJobArgs struct {
 	JobArgs
 	ShardingTotal int `json:"sharding_total"`
 	ShardingIndex int `json:"sharding_index"`
+}
+
+// SnailJobRequest 定义 SnailJobRequest 和 Metadata 的数据结构
+type SnailJobRequest struct {
+	ReqId    int64
+	Body     string
+	Metadata Metadata
+}
+
+type Metadata struct {
+	Uri     string
+	Headers map[string]string
+}
+
+type DispatchJobRequest struct {
+	NamespaceId         string                      `json:"namespaceId" description:"namespaceId 不能为空"`
+	JobId               int64                       `json:"jobId" description:"jobId 不能为空"`
+	TaskBatchId         int64                       `json:"taskBatchId" description:"taskBatchId 不能为空"`
+	TaskId              int64                       `json:"taskId" description:"taskId 不能为空"`
+	TaskType            constant.JobTaskTypeEnum    `json:"taskType" description:"taskType 不能为空"`
+	GroupName           string                      `json:"groupName" description:"group 不能为空"`
+	ParallelNum         int                         `json:"parallelNum" description:"parallelNum 不能为空"`
+	ExecutorType        int                         `json:"executorType" description:"executorType 不能为空"`
+	ExecutorInfo        string                      `json:"executorInfo" description:"executorInfo 不能为空"`
+	ExecutorTimeout     int                         `json:"executorTimeout" description:"executorTimeout 不能为空"`
+	ArgsStr             string                      `json:"argsStr,omitempty"`
+	ShardingTotal       int                         `json:"shardingTotal,omitempty"`
+	ShardingIndex       int                         `json:"shardingIndex,omitempty"`
+	WorkflowTaskBatchId int64                       `json:"workflowTaskBatchId,omitempty"`
+	WorkflowNodeId      int64                       `json:"workflowNodeId,omitempty"`
+	RetryCount          int                         `json:"retryCount,omitempty"`
+	RetryScene          int                         `json:"retryScene,omitempty" description:"重试场景 auto、manual"`
+	IsRetry             bool                        `json:"isRetry" description:"是否是重试流量"`
+	WfContext           string                      `json:"wfContext" description:"工作流上下文"`
+	TaskName            string                      `json:"taskName"`
+	MrStage             constant.MapReduceStageEnum `json:"mrStage"`
+}
+
+type DispatchJobArgs struct {
+	NamespaceId         string                   `json:"namespaceId" description:"namespaceId 不能为空"`
+	JobId               int                      `json:"jobId" description:"jobId 不能为空"`
+	TaskBatchId         int                      `json:"taskBatchId" description:"taskBatchId 不能为空"`
+	TaskId              int                      `json:"taskId" description:"taskId 不能为空"`
+	TaskType            constant.JobTaskTypeEnum `json:"taskType" description:"taskType 不能为空"`
+	GroupName           string                   `json:"groupName" description:"group 不能为空"`
+	ParallelNum         int                      `json:"parallelNum" description:"parallelNum 不能为空"`
+	ExecutorType        int                      `json:"executorType" description:"executorType 不能为空"`
+	ExecutorInfo        string                   `json:"executorInfo" description:"executorInfo 不能为空"`
+	ExecutorTimeout     int                      `json:"executorTimeout" description:"executorTimeout 不能为空"`
+	ArgsStr             *string                  `json:"argsStr,omitempty"`
+	ShardingTotal       *int                     `json:"shardingTotal,omitempty"`
+	ShardingIndex       *int                     `json:"shardingIndex,omitempty"`
+	WorkflowTaskBatchId *int                     `json:"workflowTaskBatchId,omitempty"`
+	WorkflowNodeId      *int                     `json:"workflowNodeId,omitempty"`
+	RetryCount          *int                     `json:"retryCount,omitempty"`
+	RetryScene          *int                     `json:"retryScene,omitempty" description:"重试场景 auto、manual"`
+	IsRetry             bool                     `json:"isRetry" description:"是否是重试流量"`
+}
+
+type StopJobRequest struct {
+	ReqID int64 `json:"reqId"`
+	Args  []struct {
+		TaskBatchID int `json:"taskBatchId"`
+	} `json:"args"`
+}
+
+type NettyResult struct {
+	ReqID  int64               `json:"reqId"`
+	Status constant.StatusEnum `json:"status"`
+	Data   interface{}         `json:"data"`
+}
+
+type SnailHttpLogHandler struct {
+	mu       sync.Mutex
+	capacity int
+	interval time.Duration
+	buffer   chan *JobLogTask
+	timer    *time.Timer
+}
+
+type TaskLogFieldDTO struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
+
+// 上报服务器日志结构
+type JobLogTask struct {
+	LogType     string            `json:"logType"`
+	NamespaceID string            `json:"namespaceId"`
+	GroupName   string            `json:"groupName"`
+	RealTime    int64             `json:"realTime"`
+	FieldList   []TaskLogFieldDTO `json:"fieldList"`
+	JobID       int               `json:"jobId"`
+	TaskBatchID int               `json:"taskBatchId"`
+	TaskID      int               `json:"taskId"`
+}
+
+type LogRecord struct {
+	TimeStamp time.Time
+	Level     string
+	Thread    string
+	Message   string
+	Module    string
+	FuncName  string
+	Lineno    int
+	ExcInfo   error
 }

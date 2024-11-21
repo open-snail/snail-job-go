@@ -1,24 +1,21 @@
-package executor
+package job
 
 import (
-	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"opensnail.com/snail-job/snail-job-go/constant"
 	"opensnail.com/snail-job/snail-job-go/dto"
-	"opensnail.com/snail-job/snail-job-go/job"
 )
 
 type JobExecutorFutureCallback struct {
 	jobContext dto.JobContext
 }
 
-func (executor JobExecutorFutureCallback) onCallback(result *dto.ExecuteResult) {
+func (executor JobExecutorFutureCallback) onCallback(client SnailJobClient, result *dto.ExecuteResult) {
 
 	// todo 这里要改成Remote日志
-	job.LocalLog.Info(fmt.Sprintf("Success result: %v", result))
+	LocalLog.Info(fmt.Sprintf("Success result: %v", result))
 
 	if result == nil {
 		result = dto.Success(nil)
@@ -32,32 +29,15 @@ func (executor JobExecutorFutureCallback) onCallback(result *dto.ExecuteResult) 
 	}
 
 	request := buildDispatchJobResultRequest(result, taskStatus, executor.jobContext)
-	if err := dispatchResult(request); err != nil {
+	if err := dispatchResult(client, request); err != nil {
 		log.Printf("Error reporting execution result: %s, TaskID: %s\n", err.Error(), executor.jobContext.TaskId)
 		//sendMessage(err.Error())
 	}
 }
 
-func (executor JobExecutorFutureCallback) onFailure(t error) {
-	if errors.Is(t, context.Canceled) {
-		job.LocalLog.Info(fmt.Sprintf("Task has been canceled, not reporting status"))
-		return
-	}
-
-	failure := dto.Failure(nil, t.Error())
-
-	log.Printf("Task execution failed TaskBatchId: %s, Error: %s\n", executor.jobContext.TaskBatchId, t.Error())
-	request := buildDispatchJobResultRequest(failure, constant.FAIL, executor.jobContext) // JobTaskStatusEnum.FAIL
-
-	if err := dispatchResult(request); err != nil {
-		job.LocalLog.Info(fmt.Sprintf("Error reporting execution result: %s, TaskID: %s\n", err.Error(), executor.jobContext.TaskId))
-		//sendMessage(err.Error())
-	}
-}
-
-func dispatchResult(req dto.DispatchJobResultRequest) error {
-	// todo 请求服务端
-	job.LocalLog.Info(fmt.Sprintf("request server: %v", req))
+func dispatchResult(client SnailJobClient, req dto.DispatchJobResultRequest) error {
+	LocalLog.Info(fmt.Sprintf("request server: %v", req))
+	client.SendDispatchResult(req)
 	return nil
 }
 

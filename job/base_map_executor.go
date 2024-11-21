@@ -1,4 +1,4 @@
-package executor
+package job
 
 import (
 	"opensnail.com/snail-job/snail-job-go/dto"
@@ -10,17 +10,17 @@ type MapExecute interface {
 	BindMapExecute(child MapExecute)
 }
 
-type AbstractMapJobExecutor struct {
-	AbstractJobExecutor
+type BaseMapJobExecutor struct {
+	BaseJobExecutor
 	Execute MapExecute
 }
 
-func (executor *AbstractMapJobExecutor) BindMapExecute(child MapExecute) {
+func (executor *BaseMapJobExecutor) BindMapExecute(child MapExecute) {
 	executor.Execute = child
 }
 
 // DoJobExecute 模板类
-func (executor *AbstractMapJobExecutor) DoJobExecute(jobArgs dto.IJobArgs) dto.ExecuteResult {
+func (executor *BaseMapJobExecutor) DoJobExecute(jobArgs dto.IJobArgs) dto.ExecuteResult {
 	var mapArgs dto.MapArgs
 	util.ToObj(util.ToByteArr(jobArgs), mapArgs)
 	executor.Execute.DoJobMapExecute(&mapArgs)
