@@ -5,15 +5,16 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"log"
 	"math/rand"
+	"strconv"
+	"time"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"opensnail.com/snail-job/snail-job-go/constant"
 	"opensnail.com/snail-job/snail-job-go/dto"
 	"opensnail.com/snail-job/snail-job-go/rpc"
-	"strconv"
-	"time"
 )
 
 type SnailJobClient struct {

@@ -1,9 +1,10 @@
 package dto
 
 import (
-	"opensnail.com/snail-job/snail-job-go/constant"
 	"sync"
 	"time"
+
+	"opensnail.com/snail-job/snail-job-go/constant"
 )
 
 type Options struct {

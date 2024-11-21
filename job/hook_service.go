@@ -1,8 +1,9 @@
 package job
 
 import (
-	"opensnail.com/snail-job/snail-job-go/dto"
 	"sync"
+
+	"opensnail.com/snail-job/snail-job-go/dto"
 )
 
 type HookLogService struct {

@@ -2,11 +2,11 @@ package job
 
 import (
 	"context"
-	"flag"
 	"fmt"
-	"google.golang.org/grpc"
 	"log"
 	"net"
+
+	"google.golang.org/grpc"
 	"opensnail.com/snail-job/snail-job-go/dto"
 	"opensnail.com/snail-job/snail-job-go/rpc"
 	"opensnail.com/snail-job/snail-job-go/util"
@@ -27,7 +27,6 @@ func (s *Server) UnaryRequest(_ context.Context, in *rpc.GrpcSnailJobRequest) (*
 }
 
 func RunServer(opts *dto.Options, client SnailJobClient, executors map[string]IJobExecutor) {
-	flag.Parse()
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", opts.HostPort))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)

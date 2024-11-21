@@ -2,6 +2,7 @@ package job
 
 import (
 	"fmt"
+
 	"opensnail.com/snail-job/snail-job-go/constant"
 	"opensnail.com/snail-job/snail-job-go/dto"
 )

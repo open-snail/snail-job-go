@@ -2,10 +2,11 @@ package snailjob
 
 import (
 	"fmt"
+	"sync"
+
 	"opensnail.com/snail-job/snail-job-go/constant"
 	"opensnail.com/snail-job/snail-job-go/dto"
 	"opensnail.com/snail-job/snail-job-go/job"
-	"sync"
 )
 
 // SnailJobManager snail job 客户端启动者
