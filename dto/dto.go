@@ -1,9 +1,10 @@
 package dto
 
 import (
-	"github.com/sirupsen/logrus"
 	"sync"
 	"time"
+
+	"github.com/sirupsen/logrus"
 
 	"opensnail.com/snail-job/snail-job-go/constant"
 )
@@ -277,12 +278,12 @@ type JobLogTask struct {
 }
 
 type LogRecord struct {
-	TimeStamp time.Time
-	Level     string
-	Thread    string
-	Message   string
-	Module    string
-	FuncName  string
-	Lineno    int
-	ExcInfo   error
+	TimeStamp time.Time `json:"timeStamp"`
+	Level     string    `json:"level"`
+	Thread    string    `json:"thread"`
+	Message   string    `json:"message"`
+	Module    string    `json:"module"`
+	FuncName  string    `json:"funcName"`
+	Lineno    int       `json:"lineno"`
+	ExcInfo   error     `json:"excInfo"`
 }
