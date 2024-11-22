@@ -121,7 +121,7 @@ func (receiver *SnailJobClient) SendDispatchResult(payload interface{}) {
 
 func (receiver *SnailJobClient) SendHeartbeat() {
 	for {
-		receiver.SendToServer("/beat", []string{"PING"}, "发送心跳")
+		receiver.SendToServer("/beat", "PING", "发送心跳")
 		time.Sleep(time.Second * 30)
 	}
 }
