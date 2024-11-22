@@ -36,7 +36,7 @@ func NewSnailJobClient(opts *dto.Options, factory LoggerFactory) SnailJobClient 
 	return SnailJobClient{
 		opts:   opts,
 		client: rpc.NewUnaryRequestClient(conn),
-		log:    factory.GetLogger("grpc-client", nil),
+		log:    factory.GetLocalLogger("grpc-client"),
 	}
 }
 

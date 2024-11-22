@@ -19,9 +19,12 @@ func Init(client SnailJobClient, executors map[string]NewJobExecutor, factory Lo
 }
 
 func (e *Dispatcher) DispatchJob(dispatchJob dto.DispatchJobRequest) dto.Result {
+	jobContext := buildJobContext(dispatchJob)
+	remoteLogger := e.factory.GetRemoteLogger(dispatchJob.ExecutorInfo, &LoggerHook{jobContext})
+	localLogger := e.factory.GetLocalLogger(dispatchJob.ExecutorInfo)
 
 	if dispatchJob.IsRetry {
-		LocalLog.Info("Task execution/scheduling failed, retrying. Retry count: [%d]", dispatchJob.IsRetry)
+		remoteLogger.Info("Task execution/scheduling failed, retrying. Retry count: [%d]", dispatchJob.IsRetry)
 	}
 
 	// 必须是GO客户端才能使用
@@ -33,17 +36,16 @@ func (e *Dispatcher) DispatchJob(dispatchJob dto.DispatchJobRequest) dto.Result 
 	jobExecute, _ := e.GetExecutor(dispatchJob.ExecutorInfo)
 	println(&jobExecute)
 	if jobExecute == nil {
-		LocalLog.Info("Invalid executor configuration. ExecutorInfo: [%s]", dispatchJob.ExecutorInfo)
+		remoteLogger.Info("Invalid executor configuration. ExecutorInfo: [%s]", dispatchJob.ExecutorInfo)
 		return dto.Result{Status: 1, Message: "执行器配置有误", Data: false}
 	}
-
-	jobContext := buildJobContext(dispatchJob)
 
 	jobStrategy := jobExecute.(JobStrategy)
 	jobStrategy.bindJobStrategy(jobStrategy)
 	jobStrategy.setClient(e.client)
-	jobStrategy.setContext(context.Background())
-	jobStrategy.setLogger(e.factory.GetLogger(dispatchJob.ExecutorInfo, &LoggerHook{jobContext}))
+	cxt := context.WithValue(context.Background(), JobContextKey, jobContext)
+	jobStrategy.setContext(cxt)
+	jobStrategy.setLogger(localLogger, remoteLogger)
 
 	// bing executor
 	if dispatchJob.TaskType == constant.MAP {
@@ -80,7 +82,7 @@ func buildJobContext(dispatchJob dto.DispatchJobRequest) dto.JobContext {
 		IsRetry:             dispatchJob.IsRetry,
 		RetryScene:          dispatchJob.RetryScene,
 		TaskName:            dispatchJob.TaskName,
-		MrStage:             constant.MapReduceStageEnum(dispatchJob.MrStage),
+		MrStage:             dispatchJob.MrStage,
 	}
 
 	// Parse ArgsStr and WfContext (simplified example)

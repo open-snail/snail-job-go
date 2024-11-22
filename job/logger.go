@@ -34,7 +34,8 @@ type Logger interface {
 }
 
 type LoggerFactory interface {
-	GetLogger(name string, h logrus.Hook) Logger
+	GetRemoteLogger(name string, h logrus.Hook) Logger
+	GetLocalLogger(name string) Logger
 }
 
 type loggerFactory struct {
@@ -43,7 +44,7 @@ type loggerFactory struct {
 	opts    *dto.Options
 }
 
-func (e *loggerFactory) GetLogger(name string, h logrus.Hook) Logger {
+func (e *loggerFactory) GetRemoteLogger(name string, h logrus.Hook) Logger {
 	e.lock.Lock()
 	defer e.lock.Unlock()
 	if e.loggers[name] == nil {
@@ -56,6 +57,19 @@ func (e *loggerFactory) GetLogger(name string, h logrus.Hook) Logger {
 
 	if h != nil {
 		logrus.AddHook(h)
+	}
+	return e.loggers[name]
+}
+
+func (e *loggerFactory) GetLocalLogger(name string) Logger {
+	e.lock.Lock()
+	defer e.lock.Unlock()
+	if e.loggers[name] == nil {
+		e.loggers[name] = &logger{
+			Name: name,
+			//Domain: "",
+			Level: e.opts.Level,
+		}
 	}
 	return e.loggers[name]
 }

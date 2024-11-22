@@ -3,7 +3,6 @@ package job
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"time"
 
 	"opensnail.com/snail-job/snail-job-go/constant"
@@ -22,14 +21,15 @@ type JobStrategy interface {
 	bindJobStrategy(child JobStrategy)
 	setClient(client SnailJobClient)
 	setContext(ctx context.Context)
-	setLogger(ctx Logger)
+	setLogger(localLogger Logger, remoteLogger Logger)
 }
 
 type BaseJobExecutor struct {
-	strategy JobStrategy
-	client   SnailJobClient
-	ctx      context.Context
-	logger   Logger
+	strategy     JobStrategy
+	client       SnailJobClient
+	ctx          context.Context
+	localLogger  Logger
+	remoteLogger Logger
 }
 
 func (executor *BaseJobExecutor) bindJobStrategy(child JobStrategy) {
@@ -44,21 +44,25 @@ func (executor *BaseJobExecutor) setContext(ctx context.Context) {
 	executor.ctx = ctx
 }
 
-func (executor *BaseJobExecutor) setLogger(logger Logger) {
-	executor.logger = logger
+func (executor *BaseJobExecutor) setLogger(localLogger Logger, remoteLogger Logger) {
+	executor.localLogger = localLogger
+	executor.remoteLogger = remoteLogger
 }
 
-func (executor *BaseJobExecutor) GetContext() context.Context {
+func (executor *BaseJobExecutor) Context() context.Context {
 	return executor.ctx
 }
 
-func (executor *BaseJobExecutor) GetLogger() Logger {
-	return executor.logger
+func (executor *BaseJobExecutor) LocalLogger() Logger {
+	return executor.localLogger
+}
+
+func (executor *BaseJobExecutor) RemoteLogger() Logger {
+	return executor.remoteLogger
 }
 
 // JobExecute 模板类
 func (executor *BaseJobExecutor) JobExecute(jobContext dto.JobContext) {
-
 	resultChan := make(chan dto.ExecuteResult)
 	// Add a stop task to the timer to stop execution upon timeout
 	timer := time.NewTimer(time.Duration(jobContext.ExecutorTimeout) * time.Second)
@@ -71,7 +75,7 @@ func (executor *BaseJobExecutor) JobExecute(jobContext dto.JobContext) {
 		defer func() {
 			err := recover()
 			if err != nil {
-				executor.logger.Error("xxx", err)
+				executor.localLogger.Error("job execute error", err)
 				// 失败捕获异常
 				resultChan <- *dto.Failure(err, "执行失败")
 			}
@@ -85,12 +89,12 @@ func (executor *BaseJobExecutor) JobExecute(jobContext dto.JobContext) {
 	// Wait for the result or timeout
 	select {
 	case <-ctx.Done():
-		executor.logger.Warn(fmt.Sprintf("BaseJobExecutor 任务被取消. jobId: [%d]", jobContext.JobId))
+		executor.remoteLogger.Warn("BaseJobExecutor 任务被取消. jobId: [%d]", jobContext.JobId)
 	case <-timer.C:
 		cancel() // Cancel the job execution
-		executor.logger.Warn("BaseJobExecutor 任务执行超时. jobId: [%d]", jobContext.JobId)
+		executor.remoteLogger.Warn("BaseJobExecutor 任务执行超时. jobId: [%d]", jobContext.JobId)
 	case result := <-resultChan:
-		executor.logger.Info("BaseJobExecutor 执行了 JobExecute. jobId: [%d] result:[%s]", jobContext.JobId, result.Message)
+		executor.remoteLogger.Info("BaseJobExecutor 执行了 JobExecute. jobId: [%d] result:[%s]", jobContext.JobId, result.Message)
 		// 回调处理
 		callback := &JobExecutorFutureCallback{}
 		callback.onCallback(executor.client, &result)
@@ -159,7 +163,7 @@ func (executor *BaseJobExecutor) buildReduceJobArgs(jobContext dto.JobContext) d
 	args.TaskBatchId = jobContext.TaskBatchId
 	args.WfContext = jobContext.WfContext
 	if maps := jobContext.JobArgsHolder.Maps; maps != nil {
-		args.MapResult = parseMapResult(maps, executor.logger)
+		args.MapResult = parseMapResult(maps, executor.remoteLogger)
 	}
 
 	return &args

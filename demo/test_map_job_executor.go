@@ -14,7 +14,7 @@ type TestMapJobExecutor struct {
 }
 
 func (executor *TestMapJobExecutor) DoJobMapExecute(mpArgs *dto.MapArgs) dto.ExecuteResult {
-	logger := executor.GetLogger()
+	logger := executor.LocalLogger()
 	logger.Info("TestMapJobExecutor 开始执行 DoJobMapExecute. jobId: [%d] TaskName:[%s] ", mpArgs.GetJobId(), mpArgs.TaskName)
 	time.Sleep(1 * time.Second)
 	logger.Info("TestMapJobExecutor 执行结束 DoJobMapExecute. jobId: [%d]  TaskName:[%s]", mpArgs.GetJobId(), mpArgs.TaskName)

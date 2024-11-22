@@ -28,7 +28,7 @@ func (s *Server) UnaryRequest(_ context.Context, in *rpc.GrpcSnailJobRequest) (*
 
 func RunServer(opts *dto.Options, client SnailJobClient, executors map[string]NewJobExecutor, factory LoggerFactory) {
 
-	logger := factory.GetLogger("grpc-server", nil)
+	logger := factory.GetLocalLogger("grpc-server")
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", opts.HostPort))
 	if err != nil {
 		logger.Info("failed to listen: %v", err)

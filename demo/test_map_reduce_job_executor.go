@@ -13,7 +13,7 @@ type TestMapReduceJobExecutor struct {
 }
 
 func (executor *TestMapReduceJobExecutor) DoJobMapExecute(mpArgs *dto.MapArgs) dto.ExecuteResult {
-	logger := executor.GetLogger()
+	logger := executor.LocalLogger()
 	logger.Info("TestMapReduceJobExecutor 开始执行 DoJobMapExecute. jobId: [%d] TaskName:[%s] now:[%s]", mpArgs.GetJobId(), mpArgs.TaskName, time.Now().String())
 	time.Sleep(1 * time.Second)
 	logger.Info("TestMapReduceJobExecutor 执行结束 DoJobMapExecute. jobId: [%d]  TaskName:[%s] now:[%s]", mpArgs.GetJobId(), mpArgs.TaskName, time.Now().String())
@@ -27,7 +27,7 @@ func (executor *TestMapReduceJobExecutor) DoJobMapExecute(mpArgs *dto.MapArgs) d
 
 // DoReduceExecute 模板类
 func (executor *TestMapReduceJobExecutor) DoReduceExecute(jobArgs *dto.ReduceArgs) dto.ExecuteResult {
-	logger := executor.GetLogger()
+	logger := executor.LocalLogger()
 	// todo 怎么把jobArgs 转成 mapArgs
 	logger.Info("TestMapReduceJobExecutor 开始执行 DoReduceExecute.")
 
@@ -37,7 +37,7 @@ func (executor *TestMapReduceJobExecutor) DoReduceExecute(jobArgs *dto.ReduceArg
 func (executor *TestMapReduceJobExecutor) DoMergeReduceExecute(jobArgs *dto.MergeReduceArgs) dto.ExecuteResult {
 	// todo 怎么把jobArgs 转成 mapArgs
 	//executor.Execute.DoJobMapExecute(&dto.MapArgs{})
-	logger := executor.GetLogger()
+	logger := executor.LocalLogger()
 	logger.Info("TestMapReduceJobExecutor 开始执行 DoMergeReduceExecute.")
 
 	return dto.ExecuteResult{}

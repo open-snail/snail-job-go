@@ -5,6 +5,10 @@ import (
 	"opensnail.com/snail-job/snail-job-go/util"
 )
 
+const (
+	JobContextKey = "jobContext"
+)
+
 type MapExecute interface {
 	DoJobMapExecute(args *dto.MapArgs) dto.ExecuteResult
 	bindMapExecute(child MapExecute)

@@ -23,7 +23,7 @@ func NewSnailJobManager(opts *dto.Options) *SnailJobManager {
 	factory := job.NewLoggerFactory(opts)
 	return &SnailJobManager{
 		factory:   factory,
-		logger:    factory.GetLogger("executor", nil),
+		logger:    factory.GetLocalLogger("snail-job-manager"),
 		executors: make(map[string]job.NewJobExecutor),
 		opts:      opts,
 		client:    job.NewSnailJobClient(opts, factory),
@@ -60,6 +60,6 @@ func (e *SnailJobManager) Register(name string, executor job.NewJobExecutor) *Sn
 	}
 
 	e.executors[name] = executor
-	job.LocalLog.Info(fmt.Sprintf("Registered executor: %s", name))
+	e.logger.Info(fmt.Sprintf("Registered executor: %s", name))
 	return e
 }

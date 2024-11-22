@@ -3,20 +3,20 @@ package job
 import (
 	"encoding/json"
 	"fmt"
-	"log"
-
 	"opensnail.com/snail-job/snail-job-go/constant"
 	"opensnail.com/snail-job/snail-job-go/dto"
 )
 
 type JobExecutorFutureCallback struct {
-	jobContext dto.JobContext
+	jobContext   dto.JobContext
+	localLogger  Logger
+	remoteLogger Logger
 }
 
 func (executor JobExecutorFutureCallback) onCallback(client SnailJobClient, result *dto.ExecuteResult) {
 
 	// todo 这里要改成Remote日志
-	LocalLog.Info(fmt.Sprintf("Success result: %v", result))
+	executor.remoteLogger.Info(fmt.Sprintf("Success result: %v", result))
 
 	if result == nil {
 		result = dto.Success(nil)
@@ -31,13 +31,13 @@ func (executor JobExecutorFutureCallback) onCallback(client SnailJobClient, resu
 
 	request := buildDispatchJobResultRequest(result, taskStatus, executor.jobContext)
 	if err := dispatchResult(client, request); err != nil {
-		log.Printf("Error reporting execution result: %s, TaskID: %s\n", err.Error(), executor.jobContext.TaskId)
+		executor.remoteLogger.Info("Error reporting execution result: %s, TaskID: %s\n", err.Error(), executor.jobContext.TaskId)
 		//sendMessage(err.Error())
 	}
 }
 
 func dispatchResult(client SnailJobClient, req dto.DispatchJobResultRequest) error {
-	LocalLog.Info(fmt.Sprintf("request server: %v", req))
+	client.log.Info("request server: %v", req)
 	client.SendDispatchResult(req)
 	return nil
 }
