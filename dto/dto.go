@@ -18,18 +18,18 @@ type Options struct {
 }
 
 type DispatchJobResultRequest struct {
-	TaskBatchId         int64
-	GroupName           string
-	JobId               int64
-	TaskId              int64
-	WorkflowTaskBatchId int64
-	WorkflowNodeId      int64
-	TaskType            constant.JobTaskTypeEnum
-	ExecuteResult       ExecuteResult
-	TaskStatus          int
-	Retry               bool
-	RetryScene          int
-	WfContext           string
+	TaskBatchId         int64                    `json:"taskBatchId"`
+	GroupName           string                   `json:"groupName"`
+	JobId               int64                    `json:"jobId"`
+	TaskId              int64                    `json:"taskId"`
+	WorkflowTaskBatchId int64                    `json:"workflowTaskBatchId"`
+	WorkflowNodeId      int64                    `json:"workflowNodeId"`
+	TaskType            constant.JobTaskTypeEnum `json:"taskType"`
+	ExecuteResult       ExecuteResult            `json:"executeResult"`
+	TaskStatus          int                      `json:"taskStatus"`
+	Retry               bool                     `json:"retry"`
+	RetryScene          int                      `json:"retryScene"`
+	WfContext           string                   `json:"wfContext"`
 }
 
 type ExecuteResult struct {
