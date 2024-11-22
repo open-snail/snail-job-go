@@ -11,25 +11,26 @@ import (
 
 // SnailJobManager snail job 客户端启动者
 type SnailJobManager struct {
-	factory   LoggerFactory
-	logger    Logger
-	executors map[string]job.IJobExecutor
+	factory   job.LoggerFactory
+	logger    job.Logger
+	executors map[string]job.NewJobExecutor
 	client    job.SnailJobClient
 	opts      *dto.Options
 	lock      sync.Mutex
 }
 
-func NewSnailJobManager(opts *dto.Options, factory LoggerFactory) *SnailJobManager {
+func NewSnailJobManager(opts *dto.Options) *SnailJobManager {
+	factory := job.NewLoggerFactory(opts)
 	return &SnailJobManager{
 		factory:   factory,
-		logger:    factory.GetLogger("executor"),
-		executors: make(map[string]job.IJobExecutor),
+		logger:    factory.GetLogger("executor", nil),
+		executors: make(map[string]job.NewJobExecutor),
 		opts:      opts,
-		client:    job.NewSnailJobClient(opts),
+		client:    job.NewSnailJobClient(opts, factory),
 	}
 }
 
-func (e *SnailJobManager) GetLoggerFactory() LoggerFactory {
+func (e *SnailJobManager) GetLoggerFactory() job.LoggerFactory {
 	return e.factory
 }
 
@@ -41,7 +42,7 @@ func (e *SnailJobManager) Run() {
 	e.logger.Info("Run SnailJob Client v%s", constant.VERSION)
 	go e.client.SendHeartbeat()
 	go job.NewHookLogService(e.client)
-	job.RunServer(e.opts, e.client, e.executors)
+	job.RunServer(e.opts, e.client, e.executors, e.factory)
 }
 
 func (e *SnailJobManager) Init() error {
@@ -50,7 +51,7 @@ func (e *SnailJobManager) Init() error {
 }
 
 // Register 注册job执行器入门
-func (e *SnailJobManager) Register(name string, executor job.IJobExecutor) {
+func (e *SnailJobManager) Register(name string, executor job.NewJobExecutor) *SnailJobManager {
 	e.lock.Lock()
 	defer e.lock.Unlock()
 
@@ -60,4 +61,5 @@ func (e *SnailJobManager) Register(name string, executor job.IJobExecutor) {
 
 	e.executors[name] = executor
 	job.LocalLog.Info(fmt.Sprintf("Registered executor: %s", name))
+	return e
 }

@@ -20,9 +20,10 @@ import (
 type SnailJobClient struct {
 	opts   *dto.Options
 	client rpc.UnaryRequestClient
+	log    Logger
 }
 
-func NewSnailJobClient(opts *dto.Options) SnailJobClient {
+func NewSnailJobClient(opts *dto.Options, factory LoggerFactory) SnailJobClient {
 	// 创建 gRPC 连接
 	flag.Parse()
 	// Set up a connection to the server.
@@ -35,6 +36,7 @@ func NewSnailJobClient(opts *dto.Options) SnailJobClient {
 	return SnailJobClient{
 		opts:   opts,
 		client: rpc.NewUnaryRequestClient(conn),
+		log:    factory.GetLogger("grpc-client", nil),
 	}
 }
 
@@ -53,7 +55,7 @@ func GenerateReqID() int64 {
 }
 
 func (receiver *SnailJobClient) SendToServer(uri string, payload interface{}, jobName string) constant.StatusEnum {
-
+	l := receiver.log
 	c := receiver.opts
 
 	// 构建 Metadata 和请求体
@@ -85,27 +87,27 @@ func (receiver *SnailJobClient) SendToServer(uri string, payload interface{}, jo
 
 	response, err := receiver.client.UnaryRequest(ctx, req)
 	if err != nil {
-		log.Printf("%s失败: 无法连接服务器: %v", jobName, err)
+		l.Info("%s失败: 无法连接服务器: %s", jobName, err)
 		return constant.NO
 	}
 
 	// 检查响应
 	if response.ReqId != reqId {
-		log.Fatalf("reqId 不一致!")
+		l.Warn("reqId 不一致!")
 	}
 
 	if response.Status == int32(constant.YES) {
-		log.Printf("%s成功: reqId=%d", jobName, reqId)
+		l.Info("%s成功: reqId=%d", jobName, reqId)
 		data, err := json.Marshal(payload)
 		if err == nil {
-			log.Printf("data=%s", string(data))
+			l.Info("data=%s", string(data))
 		} else {
-			log.Printf("data=%v", payload)
+			l.Error("data=%v", payload)
 		}
 		return constant.YES
 	}
 
-	log.Printf("%s失败: %s", jobName, response.Message)
+	l.Error("%s失败: %s", jobName, response.Message)
 	return constant.NO
 }
 

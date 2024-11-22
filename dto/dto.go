@@ -1,6 +1,7 @@
 package dto
 
 import (
+	"github.com/sirupsen/logrus"
 	"sync"
 	"time"
 
@@ -15,6 +16,7 @@ type Options struct {
 	Namespace  string
 	GroupName  string
 	Token      string
+	Level      logrus.Level
 }
 
 type DispatchJobResultRequest struct {

@@ -1,27 +1,26 @@
-package snailjob
+package job
 
 import (
+	"opensnail.com/snail-job/snail-job-go/dto"
 	"sync"
 
 	"github.com/sirupsen/logrus"
 )
 
-type Level logrus.Level
-
 const (
-	Panic = Level(logrus.PanicLevel)
-	Fatal = Level(logrus.FatalLevel)
-	Error = Level(logrus.ErrorLevel)
-	Warn  = Level(logrus.WarnLevel)
-	Info  = Level(logrus.InfoLevel)
-	Debug = Level(logrus.DebugLevel)
-	Trace = Level(logrus.TraceLevel)
+	Panic = logrus.PanicLevel
+	Fatal = logrus.FatalLevel
+	Error = logrus.ErrorLevel
+	Warn  = logrus.WarnLevel
+	Info  = logrus.InfoLevel
+	Debug = logrus.DebugLevel
+	Trace = logrus.TraceLevel
 )
 
 type logger struct {
 	Name   string
 	Domain string
-	Level  Level
+	Level  logrus.Level
 }
 
 type Logger interface {
@@ -35,31 +34,36 @@ type Logger interface {
 }
 
 type LoggerFactory interface {
-	GetLogger(name string) Logger
+	GetLogger(name string, h logrus.Hook) Logger
 }
 
 type loggerFactory struct {
 	lock    sync.Mutex
 	loggers map[string]Logger
+	opts    *dto.Options
 }
 
-func (e *loggerFactory) GetLogger(name string) Logger {
+func (e *loggerFactory) GetLogger(name string, h logrus.Hook) Logger {
 	e.lock.Lock()
 	defer e.lock.Unlock()
 	if e.loggers[name] == nil {
 		e.loggers[name] = &logger{
-			Name:   name,
-			Domain: "",
-			Level:  Info,
+			Name: name,
+			//Domain: "",
+			Level: e.opts.Level,
 		}
 	}
 
+	if h != nil {
+		logrus.AddHook(h)
+	}
 	return e.loggers[name]
 }
 
-func NewLoggerFactory() LoggerFactory {
+func NewLoggerFactory(opts *dto.Options) LoggerFactory {
 	return &loggerFactory{
 		loggers: make(map[string]Logger),
+		opts:    opts,
 	}
 }
 

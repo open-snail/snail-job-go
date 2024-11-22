@@ -1,6 +1,7 @@
 package job
 
 import (
+	"opensnail.com/snail-job/snail-job-go/constant"
 	"opensnail.com/snail-job/snail-job-go/dto"
 	"opensnail.com/snail-job/snail-job-go/util"
 )
@@ -13,11 +14,11 @@ type MapReduceExecute interface {
 
 type BaseMapReduceJobExecutor struct {
 	BaseMapJobExecutor
-	MrExecute MapReduceExecute
+	mrExecute MapReduceExecute
 }
 
 func (executor *BaseMapReduceJobExecutor) BindMapReduceExecute(child MapReduceExecute) {
-	executor.MrExecute = child
+	executor.mrExecute = child
 }
 
 // DoJobExecute 模板类
@@ -25,13 +26,17 @@ func (executor *BaseMapReduceJobExecutor) DoJobExecute(jobArgs dto.IJobArgs) dto
 	// 将 User 转换为 JSON
 	var mapArgs dto.MapArgs
 	util.ToObj(util.ToByteArr(jobArgs), mapArgs)
-	// todo 怎么把jobArgs 转成 mapArgs
-	executor.Execute.DoJobMapExecute(&mapArgs)
-	executor.MrExecute.DoReduceExecute(&dto.ReduceArgs{})
-	executor.MrExecute.DoMergeReduceExecute(&dto.MergeReduceArgs{})
-	return dto.ExecuteResult{}
+	jobContext := executor.ctx.Value("jobContext").(*dto.JobContext)
+	mrStage := jobContext.MrStage
+	if mrStage == constant.MAP_STAGE {
+		return executor.execute.DoJobMapExecute(&mapArgs)
+	} else if mrStage == constant.REDUCE_STAGE {
+		return executor.mrExecute.DoReduceExecute(&dto.ReduceArgs{})
+	} else {
+		return executor.mrExecute.DoMergeReduceExecute(&dto.MergeReduceArgs{})
+	}
 }
 
 func (executor *BaseMapReduceJobExecutor) DoJobMapExecute(args *dto.MapArgs) dto.ExecuteResult {
-	return executor.Execute.DoJobMapExecute(args)
+	return executor.execute.DoJobMapExecute(args)
 }

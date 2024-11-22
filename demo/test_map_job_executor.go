@@ -13,19 +13,11 @@ type TestMapJobExecutor struct {
 	job.BaseMapJobExecutor
 }
 
-// NewTestMapJobExecutor 创建对象
-func NewTestMapJobExecutor() *TestMapJobExecutor {
-	executor := &TestMapJobExecutor{}
-	//executor.BindMapExecute(executor)
-	//executor.BindJobStrategy(executor)
-	return executor
-}
-
 func (executor *TestMapJobExecutor) DoJobMapExecute(mpArgs *dto.MapArgs) dto.ExecuteResult {
-
-	job.LocalLog.Info(fmt.Sprintf("TestMapJobExecutor 开始执行 DoJobMapExecute. jobId: [%d] TaskName:[%s] ", mpArgs.GetJobId(), mpArgs.TaskName))
+	logger := executor.GetLogger()
+	logger.Info("TestMapJobExecutor 开始执行 DoJobMapExecute. jobId: [%d] TaskName:[%s] ", mpArgs.GetJobId(), mpArgs.TaskName)
 	time.Sleep(1 * time.Second)
-	job.LocalLog.Info(fmt.Sprintf("TestMapJobExecutor 执行结束 DoJobMapExecute. jobId: [%d]  TaskName:[%s]", mpArgs.GetJobId(), mpArgs.TaskName))
+	logger.Info("TestMapJobExecutor 执行结束 DoJobMapExecute. jobId: [%d]  TaskName:[%s]", mpArgs.GetJobId(), mpArgs.TaskName)
 	num1 := 1
 	num2 := 1
 	num3 := num1 / num2

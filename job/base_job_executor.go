@@ -10,6 +10,8 @@ import (
 	"opensnail.com/snail-job/snail-job-go/dto"
 )
 
+type NewJobExecutor func() IJobExecutor
+
 // IJobExecutor 执行器接口
 type IJobExecutor interface {
 	JobExecute(context dto.JobContext)
@@ -17,25 +19,41 @@ type IJobExecutor interface {
 
 type JobStrategy interface {
 	DoJobExecute(dto.IJobArgs) dto.ExecuteResult
-	BindJobStrategy(child JobStrategy)
-	SetClient(client SnailJobClient)
+	bindJobStrategy(child JobStrategy)
+	setClient(client SnailJobClient)
+	setContext(ctx context.Context)
+	setLogger(ctx Logger)
 }
 
 type BaseJobExecutor struct {
-	Strategy JobStrategy
+	strategy JobStrategy
 	client   SnailJobClient
+	ctx      context.Context
+	logger   Logger
 }
 
-func (executor *BaseJobExecutor) BindJobStrategy(child JobStrategy) {
-	executor.Strategy = child
+func (executor *BaseJobExecutor) bindJobStrategy(child JobStrategy) {
+	executor.strategy = child
 }
 
-func (executor *BaseJobExecutor) SetClient(client SnailJobClient) {
+func (executor *BaseJobExecutor) setClient(client SnailJobClient) {
 	executor.client = client
 }
 
-func (executor *BaseJobExecutor) GetClient(client SnailJobClient) {
-	executor.client = client
+func (executor *BaseJobExecutor) setContext(ctx context.Context) {
+	executor.ctx = ctx
+}
+
+func (executor *BaseJobExecutor) setLogger(logger Logger) {
+	executor.logger = logger
+}
+
+func (executor *BaseJobExecutor) GetContext() context.Context {
+	return executor.ctx
+}
+
+func (executor *BaseJobExecutor) GetLogger() Logger {
+	return executor.logger
 }
 
 // JobExecute 模板类
@@ -53,7 +71,7 @@ func (executor *BaseJobExecutor) JobExecute(jobContext dto.JobContext) {
 		defer func() {
 			err := recover()
 			if err != nil {
-				LocalLog.Error(err)
+				executor.logger.Error("xxx", err)
 				// 失败捕获异常
 				resultChan <- *dto.Failure(err, "执行失败")
 			}
@@ -61,18 +79,18 @@ func (executor *BaseJobExecutor) JobExecute(jobContext dto.JobContext) {
 
 		jobArgs := executor.buildJobArgsBasedOnType(jobContext)
 		// 执行任务
-		resultChan <- executor.Strategy.DoJobExecute(jobArgs)
+		resultChan <- executor.strategy.DoJobExecute(jobArgs)
 	}()
 
 	// Wait for the result or timeout
 	select {
 	case <-ctx.Done():
-		LocalLog.Warnf(fmt.Sprintf("BaseJobExecutor 任务被取消. jobId: [%d]", jobContext.JobId))
+		executor.logger.Warn(fmt.Sprintf("BaseJobExecutor 任务被取消. jobId: [%d]", jobContext.JobId))
 	case <-timer.C:
 		cancel() // Cancel the job execution
-		LocalLog.Warnf(fmt.Sprintf("BaseJobExecutor 任务执行超时. jobId: [%d]", jobContext.JobId))
+		executor.logger.Warn("BaseJobExecutor 任务执行超时. jobId: [%d]", jobContext.JobId)
 	case result := <-resultChan:
-		LocalLog.Info(fmt.Sprintf("BaseJobExecutor 执行了 JobExecute. jobId: [%d] result:[%s]", jobContext.JobId, result.Message))
+		executor.logger.Info("BaseJobExecutor 执行了 JobExecute. jobId: [%d] result:[%s]", jobContext.JobId, result.Message)
 		// 回调处理
 		callback := &JobExecutorFutureCallback{}
 		callback.onCallback(executor.client, &result)
@@ -141,13 +159,13 @@ func (executor *BaseJobExecutor) buildReduceJobArgs(jobContext dto.JobContext) d
 	args.TaskBatchId = jobContext.TaskBatchId
 	args.WfContext = jobContext.WfContext
 	if maps := jobContext.JobArgsHolder.Maps; maps != nil {
-		args.MapResult = parseMapResult(maps)
+		args.MapResult = parseMapResult(maps, executor.logger)
 	}
 
 	return &args
 }
 
-func parseMapResult(maps interface{}) []interface{} {
+func parseMapResult(maps interface{}, l Logger) []interface{} {
 	var result []interface{}
 
 	switch v := maps.(type) {
@@ -155,7 +173,7 @@ func parseMapResult(maps interface{}) []interface{} {
 		// If the input is a JSON string, attempt to parse it
 		err := json.Unmarshal([]byte(v), &result)
 		if err != nil {
-			fmt.Println("Error parsing JSON string:", err)
+			l.Error("Error parsing JSON string:", err)
 			return nil
 		}
 	case []interface{}:
@@ -163,7 +181,7 @@ func parseMapResult(maps interface{}) []interface{} {
 		result = v
 	default:
 		// If the input is of an unexpected type, handle it appropriately
-		fmt.Println("Unexpected type for maps:", v)
+		l.Warn("Unexpected type for maps:", v)
 		return nil
 	}
 
@@ -179,7 +197,7 @@ func (executor *BaseJobExecutor) buildMergeReduceJobArgs(jobContext dto.JobConte
 	args.WfContext = jobContext.WfContext
 
 	if reduces := jobContext.JobArgsHolder.Reduces; reduces != nil {
-		args.Reduces = parseMapResult(reduces)
+		args.Reduces = parseMapResult(reduces, nil)
 	}
 	return &args
 }

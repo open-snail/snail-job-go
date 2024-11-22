@@ -1,6 +1,7 @@
 package job
 
 import (
+	"context"
 	"fmt"
 
 	"opensnail.com/snail-job/snail-job-go/constant"
@@ -9,11 +10,12 @@ import (
 
 type Dispatcher struct {
 	client    SnailJobClient
-	executors map[string]IJobExecutor
+	executors map[string]NewJobExecutor
+	factory   LoggerFactory
 }
 
-func Init(client SnailJobClient, executors map[string]IJobExecutor) *Dispatcher {
-	return &Dispatcher{client, executors}
+func Init(client SnailJobClient, executors map[string]NewJobExecutor, factory LoggerFactory) *Dispatcher {
+	return &Dispatcher{client, executors, factory}
 }
 
 func (e *Dispatcher) DispatchJob(dispatchJob dto.DispatchJobRequest) dto.Result {
@@ -29,6 +31,7 @@ func (e *Dispatcher) DispatchJob(dispatchJob dto.DispatchJobRequest) dto.Result 
 	//}
 
 	jobExecute, _ := e.GetExecutor(dispatchJob.ExecutorInfo)
+	println(&jobExecute)
 	if jobExecute == nil {
 		LocalLog.Info("Invalid executor configuration. ExecutorInfo: [%s]", dispatchJob.ExecutorInfo)
 		return dto.Result{Status: 1, Message: "执行器配置有误", Data: false}
@@ -37,16 +40,18 @@ func (e *Dispatcher) DispatchJob(dispatchJob dto.DispatchJobRequest) dto.Result 
 	jobContext := buildJobContext(dispatchJob)
 
 	jobStrategy := jobExecute.(JobStrategy)
-	jobStrategy.BindJobStrategy(jobStrategy)
-	jobStrategy.SetClient(e.client)
+	jobStrategy.bindJobStrategy(jobStrategy)
+	jobStrategy.setClient(e.client)
+	jobStrategy.setContext(context.Background())
+	jobStrategy.setLogger(e.factory.GetLogger(dispatchJob.ExecutorInfo, &LoggerHook{jobContext}))
 
 	// bing executor
 	if dispatchJob.TaskType == constant.MAP {
 		mapExecute := jobExecute.(MapExecute)
-		mapExecute.BindMapExecute(mapExecute)
+		mapExecute.bindMapExecute(mapExecute)
 	} else if dispatchJob.TaskType == constant.MAP_REDUCE {
 		mapExecute := jobExecute.(MapExecute)
-		mapExecute.BindMapExecute(mapExecute)
+		mapExecute.bindMapExecute(mapExecute)
 		mapReduceExecute := jobExecute.(MapReduceExecute)
 		mapReduceExecute.BindMapReduceExecute(mapReduceExecute)
 	}
@@ -96,5 +101,5 @@ func (e *Dispatcher) GetExecutor(name string) (IJobExecutor, error) {
 	if !exists {
 		return nil, fmt.Errorf("executor [%s] not found", name)
 	}
-	return executor, nil
+	return executor(), nil
 }
