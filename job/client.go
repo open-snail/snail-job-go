@@ -110,12 +110,12 @@ func (receiver *SnailJobClient) SendToServer(uri string, payload interface{}, jo
 }
 
 func (receiver *SnailJobClient) SendBatchLogReport(payload []*dto.JobLogTask) {
-	URI := "batch/server/report/log"
+	URI := "/batch/server/report/log"
 	receiver.SendToServer(URI, payload, "日志批量上报")
 }
 
 func (receiver *SnailJobClient) SendDispatchResult(payload interface{}) {
-	URI := "report/dispatch/result"
+	URI := "/report/dispatch/result"
 	receiver.SendToServer(URI, payload, "结果上报")
 }
 
