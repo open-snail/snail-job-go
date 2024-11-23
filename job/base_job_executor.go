@@ -96,9 +96,7 @@ func (executor *BaseJobExecutor) JobExecute(jobContext dto.JobContext) {
 	case result := <-resultChan:
 		executor.remoteLogger.Info("BaseJobExecutor 执行了 JobExecute. jobId: [%d] result:[%s]", jobContext.JobId, result.Message)
 		// 回调处理
-		callback := &JobExecutorFutureCallback{}
-		callback.jobContext = jobContext
-		callback.remoteLogger = executor.remoteLogger
+		callback := &JobExecutorFutureCallback{jobContext: jobContext, remoteLogger: executor.remoteLogger}
 		callback.onCallback(executor.client, &result)
 	}
 }
