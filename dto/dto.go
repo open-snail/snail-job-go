@@ -1,6 +1,7 @@
 package dto
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
@@ -30,7 +31,7 @@ type DispatchJobResultRequest struct {
 	TaskType            constant.JobTaskTypeEnum `json:"taskType"`
 	ExecuteResult       ExecuteResult            `json:"executeResult"`
 	TaskStatus          int                      `json:"taskStatus"`
-	Retry               bool                     `json:"retry"`
+	RetryStatus         bool                     `json:"RetryStatus"`
 	RetryScene          int                      `json:"retryScene"`
 	WfContext           string                   `json:"wfContext"`
 }
@@ -39,6 +40,10 @@ type ExecuteResult struct {
 	Status  int         `json:"status"`
 	Message string      `json:"message"`
 	Result  interface{} `json:"result"`
+}
+
+func (p ExecuteResult) String() string {
+	return fmt.Sprintf("(Status: %d, Message: %s Result: %v)", p.Status, p.Message, p.Result)
 }
 
 func Success(result interface{}) *ExecuteResult {
@@ -145,7 +150,7 @@ type JobContext struct {
 	ShardingIndex       int                         `json:"shardingIndex"`
 	ExecutorTimeout     int                         `json:"executorTimeout"`
 	RetryScene          int                         `json:"retryScene"` // 0=auto, 1=manual
-	IsRetry             bool                        `json:"isRetry"`
+	RetryStatus         bool                        `json:"retryStatus"`
 	TaskList            []interface{}               `json:"taskList"`
 	TaskName            string                      `json:"taskName"`
 	MrStage             constant.MapReduceStageEnum `json:"mrStage"`
@@ -212,7 +217,7 @@ type DispatchJobRequest struct {
 	WorkflowNodeId      int64                       `json:"workflowNodeId,omitempty"`
 	RetryCount          int                         `json:"retryCount,omitempty"`
 	RetryScene          int                         `json:"retryScene,omitempty" description:"重试场景 auto、manual"`
-	IsRetry             bool                        `json:"isRetry" description:"是否是重试流量"`
+	RetryStatus         bool                        `json:"retryStatus" description:"是否是重试流量"`
 	WfContext           string                      `json:"wfContext" description:"工作流上下文"`
 	TaskName            string                      `json:"taskName"`
 	MrStage             constant.MapReduceStageEnum `json:"mrStage"`
@@ -236,7 +241,13 @@ type DispatchJobArgs struct {
 	WorkflowNodeId      *int                     `json:"workflowNodeId,omitempty"`
 	RetryCount          *int                     `json:"retryCount,omitempty"`
 	RetryScene          *int                     `json:"retryScene,omitempty" description:"重试场景 auto、manual"`
-	IsRetry             bool                     `json:"isRetry" description:"是否是重试流量"`
+	RetryStatus         bool                     `json:"RetryStatus" description:"是否是重试流量"`
+}
+
+type StopJob struct {
+	JobId       int    `json:"jobId" description:"jobId 不能为空"`
+	GroupName   string `json:"groupName" description:"group 不能为空"`
+	TaskBatchId int64  `json:"taskBatchId" description:"taskBatchId 不能为空"`
 }
 
 type StopJobRequest struct {
@@ -286,4 +297,15 @@ type LogRecord struct {
 	FuncName  string    `json:"funcName"`
 	Lineno    int       `json:"lineno"`
 	ExcInfo   error     `json:"excInfo"`
+}
+
+type MapTaskRequest struct {
+	JobId               int64         `json:"jobId"`
+	TaskBatchId         int64         `json:"taskBatchId"`
+	TaskName            string        `json:"taskName"`
+	SubTask             []interface{} `json:"subTask"`
+	ParentId            int64         `json:"parentId"`
+	WorkflowTaskBatchId int64         `json:"workflowTaskBatchId"`
+	WorkflowNodeId      int64         `json:"workflowNodeId"`
+	WfContext           string        `json:"wfContext,omitempty"`
 }

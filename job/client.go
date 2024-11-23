@@ -87,20 +87,20 @@ func (receiver *SnailJobClient) SendToServer(uri string, payload interface{}, jo
 
 	response, err := receiver.client.UnaryRequest(ctx, req)
 	if err != nil {
-		l.Info("%s失败: 无法连接服务器: %s", jobName, err)
+		l.Error("%s失败: 无法连接服务器: %s", jobName, err)
 		return constant.NO
 	}
 
 	// 检查响应
 	if response.ReqId != reqId {
-		l.Warn("reqId 不一致!")
+		l.Error("reqId 不一致!")
 	}
 
 	if response.Status == int32(constant.YES) {
-		l.Info("%s成功: reqId=%d", jobName, reqId)
+		l.Debug("%s成功: reqId=%d", jobName, reqId)
 		data, err := json.Marshal(payload)
 		if err == nil {
-			l.Info("data=%s", string(data))
+			l.Debug("data=%s", string(data))
 		} else {
 			l.Error("data=%v", payload)
 		}
@@ -126,4 +126,8 @@ func (receiver *SnailJobClient) SendHeartbeat() {
 		receiver.SendToServer("/beat", "PING", "发送心跳")
 		time.Sleep(time.Second * 30)
 	}
+}
+
+func (receiver *SnailJobClient) SendBatchReportMapTask(req dto.MapTaskRequest) constant.StatusEnum {
+	return receiver.SendToServer("/batch/report/job/map/task/v1", req, "请求分片")
 }

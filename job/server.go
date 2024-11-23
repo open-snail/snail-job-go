@@ -2,6 +2,7 @@ package job
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 
@@ -19,18 +20,22 @@ type Server struct {
 
 // UnaryRequest implements snailjob.UnaryRequestServer
 func (s *Server) UnaryRequest(_ context.Context, in *rpc.GrpcSnailJobRequest) (*rpc.GrpcResult, error) {
-	s.logger.Debug("Received: %v", in)
-	var request []dto.DispatchJobRequest
-	util.ToObj([]byte(in.Body), &request)
-	switch in.Metadata.Uri {
-	case "/job/dispatch/v1":
-		result := s.endpoint.DispatchJob(request[0])
-		return &rpc.GrpcResult{ReqId: in.ReqId, Status: result.Status, Message: result.Message, Data: string(util.ToByteArr(result.Data))}, nil
-	case "/job/stop/v1":
-		// TODO: 实现停止任务
-		return &rpc.GrpcResult{ReqId: in.ReqId, Status: 0, Message: "", Data: "true"}, nil
+	s.logger.Info("Received: %v", in)
+	metadata := in.Metadata
+	var result dto.Result
+	if metadata.Uri == "/job/dispatch/v1" {
+		var request []dto.DispatchJobRequest
+		util.ToObj([]byte(in.Body), &request)
+		result = s.endpoint.DispatchJob(request[0])
+	} else if metadata.Uri == "/job/stop/v1" {
+		var request []dto.StopJob
+		util.ToObj([]byte(in.Body), &request)
+		result = s.endpoint.Stop(request[0])
+	} else {
+		return &rpc.GrpcResult{ReqId: in.ReqId, Status: 0, Message: "uri is not supports, uri=" + metadata.Uri, Data: ""}, errors.New("uri is not supports. uri=" + metadata.Uri)
 	}
-	panic("Unimplemented")
+
+	return &rpc.GrpcResult{ReqId: in.ReqId, Status: result.Status, Message: result.Message, Data: string(util.ToByteArr(result.Data))}, nil
 }
 
 func RunServer(opts *dto.Options, client SnailJobClient, executors map[string]NewJobExecutor, factory LoggerFactory) {

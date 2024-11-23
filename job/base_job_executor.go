@@ -21,7 +21,9 @@ type JobStrategy interface {
 	bindJobStrategy(child JobStrategy)
 	setClient(client SnailJobClient)
 	setContext(ctx context.Context)
+	getContext() context.Context
 	setLogger(localLogger Logger, remoteLogger Logger)
+	setExecutorCache(execCache executorCache)
 }
 
 type BaseJobExecutor struct {
@@ -30,6 +32,7 @@ type BaseJobExecutor struct {
 	ctx          context.Context
 	localLogger  Logger
 	remoteLogger Logger
+	execCache    executorCache
 }
 
 func (executor *BaseJobExecutor) bindJobStrategy(child JobStrategy) {
@@ -42,6 +45,14 @@ func (executor *BaseJobExecutor) setClient(client SnailJobClient) {
 
 func (executor *BaseJobExecutor) setContext(ctx context.Context) {
 	executor.ctx = ctx
+}
+
+func (executor *BaseJobExecutor) getContext() context.Context {
+	return executor.ctx
+}
+
+func (executor *BaseJobExecutor) setExecutorCache(cache executorCache) {
+	executor.execCache = cache
 }
 
 func (executor *BaseJobExecutor) setLogger(localLogger Logger, remoteLogger Logger) {
@@ -64,12 +75,21 @@ func (executor *BaseJobExecutor) RemoteLogger() Logger {
 // JobExecute 模板类
 func (executor *BaseJobExecutor) JobExecute(jobContext dto.JobContext) {
 	resultChan := make(chan dto.ExecuteResult)
-	// Add a stop task to the timer to stop execution upon timeout
 	timer := time.NewTimer(time.Duration(jobContext.ExecutorTimeout) * time.Second)
 	defer timer.Stop()
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	defer func() {
+		i := 0
+		if executors, found := executor.execCache.executors[jobContext.TaskBatchId]; found {
+			for _, handler := range executors {
+				if executor == handler {
+					// 删除执行器
+					executor.localLogger.Info("delete executor cache", executor)
+					executors[i] = nil
+				}
+				i++
+			}
+		}
+	}()
 
 	go func() {
 		defer func() {
@@ -88,15 +108,14 @@ func (executor *BaseJobExecutor) JobExecute(jobContext dto.JobContext) {
 
 	// Wait for the result or timeout
 	select {
-	case <-ctx.Done():
-		executor.remoteLogger.Warn("BaseJobExecutor 任务被取消. jobId: [%d]", jobContext.JobId)
 	case <-timer.C:
-		cancel() // Cancel the job execution
-		executor.remoteLogger.Warn("BaseJobExecutor 任务执行超时. jobId: [%d]", jobContext.JobId)
+		executor.remoteLogger.Warn("任务执行超时. jobId: [%d] taskBatchId:[%d]", jobContext.JobId, jobContext.TaskBatchId)
+		// 中断标志
+		executor.ctx = context.WithValue(executor.ctx, constant.INTERRUPT_KEY, true)
 	case result := <-resultChan:
-		executor.remoteLogger.Info("BaseJobExecutor 执行了 JobExecute. jobId: [%d] result:[%s]", jobContext.JobId, result.Message)
+		executor.remoteLogger.Debug("BaseJobExecutor 执行了 JobExecute. jobId: [%d] result:[%s]", jobContext.JobId, result.Message)
 		// 回调处理
-		callback := &JobExecutorFutureCallback{jobContext: jobContext, remoteLogger: executor.remoteLogger}
+		callback := &JobExecutorFutureCallback{jobContext, executor.remoteLogger, executor.remoteLogger}
 		callback.onCallback(executor.client, &result)
 	}
 }

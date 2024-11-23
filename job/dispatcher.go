@@ -12,10 +12,11 @@ type Dispatcher struct {
 	client    SnailJobClient
 	executors map[string]NewJobExecutor
 	factory   LoggerFactory
+	execCache executorCache
 }
 
 func Init(client SnailJobClient, executors map[string]NewJobExecutor, factory LoggerFactory) *Dispatcher {
-	return &Dispatcher{client, executors, factory}
+	return &Dispatcher{client, executors, factory, *NewExecutorCache()}
 }
 
 func (e *Dispatcher) DispatchJob(dispatchJob dto.DispatchJobRequest) dto.Result {
@@ -23,8 +24,8 @@ func (e *Dispatcher) DispatchJob(dispatchJob dto.DispatchJobRequest) dto.Result 
 	remoteLogger := e.factory.GetRemoteLogger(dispatchJob.ExecutorInfo, &LoggerHook{jobContext})
 	localLogger := e.factory.GetLocalLogger(dispatchJob.ExecutorInfo)
 
-	if dispatchJob.IsRetry {
-		remoteLogger.Info("Task execution/scheduling failed, retrying. Retry count: [%d]", dispatchJob.IsRetry)
+	if dispatchJob.RetryCount > 0 {
+		remoteLogger.Info("Task execution/scheduling failed, retrying. Retry count: [%d]", dispatchJob.RetryCount)
 	}
 
 	// 必须是GO客户端才能使用
@@ -34,18 +35,20 @@ func (e *Dispatcher) DispatchJob(dispatchJob dto.DispatchJobRequest) dto.Result 
 	//}
 
 	jobExecute, _ := e.GetExecutor(dispatchJob.ExecutorInfo)
-	println(&jobExecute)
 	if jobExecute == nil {
 		remoteLogger.Info("Invalid executor configuration. ExecutorInfo: [%s]", dispatchJob.ExecutorInfo)
 		return dto.Result{Status: 1, Message: "执行器配置有误", Data: false}
 	}
 
 	jobStrategy := jobExecute.(JobStrategy)
+	jobStrategy.setExecutorCache(e.execCache)
 	jobStrategy.bindJobStrategy(jobStrategy)
 	jobStrategy.setClient(e.client)
-	cxt := context.WithValue(context.Background(), JobContextKey, jobContext)
+	cxt := context.WithValue(context.Background(), constant.JOB_CONTEXT_KEY, jobContext)
 	jobStrategy.setContext(cxt)
 	jobStrategy.setLogger(localLogger, remoteLogger)
+	// 注册实例
+	e.execCache.register(dispatchJob.TaskBatchId, jobExecute)
 
 	// bing executor
 	if dispatchJob.TaskType == constant.MAP {
@@ -79,7 +82,7 @@ func buildJobContext(dispatchJob dto.DispatchJobRequest) dto.JobContext {
 		ExecutorTimeout:     dispatchJob.ExecutorTimeout,
 		WorkflowNodeId:      dispatchJob.WorkflowNodeId,
 		WorkflowTaskBatchId: dispatchJob.WorkflowTaskBatchId,
-		IsRetry:             dispatchJob.IsRetry,
+		RetryStatus:         dispatchJob.RetryStatus,
 		RetryScene:          dispatchJob.RetryScene,
 		TaskName:            dispatchJob.TaskName,
 		MrStage:             dispatchJob.MrStage,
@@ -104,4 +107,23 @@ func (e *Dispatcher) GetExecutor(name string) (IJobExecutor, error) {
 		return nil, fmt.Errorf("executor [%s] not found", name)
 	}
 	return executor(), nil
+}
+
+func (e *Dispatcher) Stop(stopJob dto.StopJob) dto.Result {
+
+	handlers := e.execCache.executors[stopJob.TaskBatchId]
+	if handlers == nil {
+		return dto.Result{Status: 1, Data: true}
+	}
+
+	for _, handler := range handlers {
+		jobStrategy := handler.(JobStrategy)
+		cfx := jobStrategy.getContext()
+		cfx = context.WithValue(cfx, constant.INTERRUPT_KEY, true)
+	}
+
+	// 删除缓存
+	e.execCache.executors[stopJob.TaskBatchId] = nil
+	// go客户端无需做任何事情
+	return dto.Result{Status: 1, Data: true}
 }

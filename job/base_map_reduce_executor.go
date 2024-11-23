@@ -1,7 +1,6 @@
 package job
 
 import (
-	"fmt"
 	"opensnail.com/snail-job/snail-job-go/constant"
 	"opensnail.com/snail-job/snail-job-go/dto"
 	"opensnail.com/snail-job/snail-job-go/util"
@@ -26,10 +25,8 @@ func (executor *BaseMapReduceJobExecutor) BindMapReduceExecute(child MapReduceEx
 func (executor *BaseMapReduceJobExecutor) DoJobExecute(jobArgs dto.IJobArgs) dto.ExecuteResult {
 	// 将 User 转换为 JSON
 	var mapArgs dto.MapArgs
-	util.ToObj(util.ToByteArr(jobArgs), mapArgs)
-	jobContext := executor.ctx.Value(JobContextKey).(dto.JobContext)
-	KK := executor.ctx.Value("11")
-	fmt.Println(KK)
+	util.ToObj(util.ToByteArr(jobArgs), &mapArgs)
+	jobContext := executor.ctx.Value(constant.JOB_CONTEXT_KEY).(dto.JobContext)
 	mrStage := jobContext.MrStage
 	if mrStage == constant.MAP_STAGE {
 		return executor.execute.DoJobMapExecute(&mapArgs)

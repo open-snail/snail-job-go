@@ -1,7 +1,10 @@
 package constant
 
 const (
-	VERSION = "1.3.0"
+	VERSION         = "1.3.0"
+	JOB_CONTEXT_KEY = "jobContext"
+	INTERRUPT_KEY   = "taskInterrupt"
+	ROOT_MAP        = "ROOT_MAP"
 )
 
 // StatusEnum 是响应状态的枚举

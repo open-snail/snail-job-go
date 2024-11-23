@@ -2,7 +2,6 @@ package job
 
 import (
 	"encoding/json"
-
 	"opensnail.com/snail-job/snail-job-go/constant"
 	"opensnail.com/snail-job/snail-job-go/dto"
 )
@@ -31,13 +30,13 @@ func (executor JobExecutorFutureCallback) onCallback(client SnailJobClient, resu
 
 	request := buildDispatchJobResultRequest(result, taskStatus, executor.jobContext)
 	if err := dispatchResult(client, request); err != nil {
-		executor.remoteLogger.Info("Error reporting execution result: %s, TaskID: %s\n", err.Error(), executor.jobContext.TaskId)
+		executor.remoteLogger.Error("Error reporting execution result: %s, TaskID: %s\n", err.Error(), executor.jobContext.TaskId)
 		//sendMessage(err.Error())
 	}
 }
 
 func dispatchResult(client SnailJobClient, req dto.DispatchJobResultRequest) error {
-	client.log.Info("request server: %v", req)
+	client.log.Info("request server: %+v", req)
 	client.SendDispatchResult(req)
 	return nil
 }
@@ -58,7 +57,7 @@ func buildDispatchJobResultRequest(result *dto.ExecuteResult, status constant.Jo
 		TaskType:            jobContext.TaskType,
 		ExecuteResult:       *result,
 		TaskStatus:          int(status),
-		Retry:               jobContext.IsRetry,
+		RetryStatus:         jobContext.RetryStatus,
 		RetryScene:          jobContext.RetryScene,
 		WfContext:           wfContext,
 	}
