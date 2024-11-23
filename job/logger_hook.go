@@ -7,6 +7,7 @@ import (
 
 type LoggerHook struct {
 	jobContext dto.JobContext
+	hs         *HookLogService
 }
 
 func (h *LoggerHook) Levels() []logrus.Level {
@@ -14,7 +15,6 @@ func (h *LoggerHook) Levels() []logrus.Level {
 }
 
 func (h *LoggerHook) Fire(entry *logrus.Entry) error {
-	//fmt.Printf(entry.Level.String())
-	//fmt.Printf(entry.Message)
+	h.hs.LogEntryCh <- entry
 	return nil
 }

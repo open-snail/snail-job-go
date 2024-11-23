@@ -21,7 +21,9 @@ func Init(client SnailJobClient, executors map[string]NewJobExecutor, factory Lo
 
 func (e *Dispatcher) DispatchJob(dispatchJob dto.DispatchJobRequest) dto.Result {
 	jobContext := buildJobContext(dispatchJob)
-	remoteLogger := e.factory.GetRemoteLogger(dispatchJob.ExecutorInfo, &LoggerHook{jobContext})
+	hls := NewHookLogService(e.client, jobContext)
+	go hls.Init()
+	remoteLogger := e.factory.GetRemoteLogger(dispatchJob.ExecutorInfo, &LoggerHook{jobContext, hls})
 	localLogger := e.factory.GetLocalLogger(dispatchJob.ExecutorInfo)
 
 	if dispatchJob.RetryCount > 0 {

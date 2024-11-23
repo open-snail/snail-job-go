@@ -41,7 +41,6 @@ func (e *SnailJobManager) GetClient() job.SnailJobClient {
 func (e *SnailJobManager) Run() {
 	e.logger.Info("Run SnailJob Client v%s", constant.VERSION)
 	go e.client.SendHeartbeat()
-	go job.NewHookLogService(e.client)
 	job.RunServer(e.opts, e.client, e.executors, e.factory)
 }
 
