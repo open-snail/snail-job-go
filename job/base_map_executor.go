@@ -9,12 +9,6 @@ import (
 	"opensnail.com/snail-job/snail-job-go/util"
 )
 
-type JobContextKeType int
-
-const (
-	JobContextKey JobContextKeType = iota
-)
-
 type MapExecute interface {
 	DoJobMapExecute(args *dto.MapArgs) dto.ExecuteResult
 	bindMapExecute(child MapExecute)

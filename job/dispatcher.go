@@ -50,7 +50,7 @@ func (e *Dispatcher) DispatchJob(dispatchJob dto.DispatchJobRequest) dto.Result 
 	jobStrategy.setContext(cxt)
 	jobStrategy.setLogger(localLogger, remoteLogger)
 	// 注册实例
-	e.execCache.register(dispatchJob.TaskBatchId, jobExecute)
+	e.execCache.register(dispatchJob.TaskBatchId, jobStrategy)
 
 	// bing executor
 	if dispatchJob.TaskType == constant.MAP {
@@ -113,19 +113,16 @@ func (e *Dispatcher) GetExecutor(name string) (IJobExecutor, error) {
 
 func (e *Dispatcher) Stop(stopJob dto.StopJob) dto.Result {
 
-	handlers := e.execCache.executors[stopJob.TaskBatchId]
-	if handlers == nil {
-		return dto.Result{Status: 1, Data: true}
-	}
-
-	for _, handler := range handlers {
-		jobStrategy := handler.(JobStrategy)
-		cfx := jobStrategy.getContext()
-		cfx = context.WithValue(cfx, constant.INTERRUPT_KEY, true)
+	if executors, found := e.execCache.executors[stopJob.TaskBatchId]; found {
+		for _, handler := range executors {
+			if handler != nil {
+				cfx := handler.getContext()
+				cfx = context.WithValue(cfx, constant.INTERRUPT_KEY, true)
+			}
+		}
 	}
 
 	// 删除缓存
-	e.execCache.executors[stopJob.TaskBatchId] = nil
-	// go客户端无需做任何事情
+	delete(e.execCache.executors, stopJob.TaskBatchId)
 	return dto.Result{Status: 1, Data: true}
 }

@@ -20,7 +20,7 @@ type Server struct {
 
 // UnaryRequest implements snailjob.UnaryRequestServer
 func (s *Server) UnaryRequest(_ context.Context, in *rpc.GrpcSnailJobRequest) (*rpc.GrpcResult, error) {
-	s.logger.Info("Received: %v", in)
+	s.logger.Debug("Received: %v", in)
 	metadata := in.Metadata
 	var result dto.Result
 	if metadata.Uri == "/job/dispatch/v1" {

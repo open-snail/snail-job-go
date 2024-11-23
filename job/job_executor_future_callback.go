@@ -13,8 +13,6 @@ type JobExecutorFutureCallback struct {
 }
 
 func (executor JobExecutorFutureCallback) onCallback(client SnailJobClient, result *dto.ExecuteResult) {
-
-	// todo 这里要改成Remote日志
 	executor.remoteLogger.Info("Success result: %v", result)
 
 	if result == nil {

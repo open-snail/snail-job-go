@@ -78,17 +78,31 @@ func (executor *BaseJobExecutor) JobExecute(jobContext dto.JobContext) {
 	timer := time.NewTimer(time.Duration(jobContext.ExecutorTimeout) * time.Second)
 	defer timer.Stop()
 	defer func() {
-		i := 0
+
 		if executors, found := executor.execCache.executors[jobContext.TaskBatchId]; found {
+			i := 0
 			for _, handler := range executors {
-				if executor == handler {
+				if executor.strategy == handler {
 					// 删除执行器
-					executor.localLogger.Info("delete executor cache", executor)
-					executors[i] = nil
+					executor.localLogger.Info("delete executor cache jobTask:[%d]", jobContext.TaskId)
+					//executors[i] = nil
+					break
 				}
+
 				i++
 			}
+
+			// 若value没有值了  删除缓存
+			// 遍历并删除满足条件的 key
+			for _, value := range executor.execCache.executors {
+				if allNil(value) {
+					delete(executor.execCache.executors, jobContext.TaskBatchId)
+				}
+			}
+			executor.localLogger.Info("delete executor cache executors:[%+v]", executor.execCache.executors)
+
 		}
+
 	}()
 
 	go func() {
@@ -223,4 +237,14 @@ func (executor *BaseJobExecutor) buildMergeReduceJobArgs(jobContext dto.JobConte
 		args.Reduces = parseMapResult(reduces, nil)
 	}
 	return &args
+}
+
+// 判断切片是否全为 nil
+func allNil(slice []JobStrategy) bool {
+	for _, v := range slice {
+		if v != nil {
+			return false
+		}
+	}
+	return true
 }
