@@ -5,8 +5,10 @@ import (
 	"opensnail.com/snail-job/snail-job-go/util"
 )
 
+type JobContextKeType int
+
 const (
-	JobContextKey = "jobContext"
+	JobContextKey JobContextKeType = iota
 )
 
 type MapExecute interface {
