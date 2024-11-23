@@ -33,7 +33,7 @@ func (hs *HookLogService) Init() {
 		go func() {
 			defer hs.Wg.Done()
 			var items []*dto.JobLogTask
-			record := Transform(hs.jobContext, entry)
+			record := hs.Transform(hs.jobContext, entry)
 			items = append(items, record)
 			hs.client.SendBatchLogReport(items)
 		}()
@@ -47,7 +47,7 @@ func FormatExcInfo(err error) string {
 	return fmt.Sprintf("%s", err)
 }
 
-func Transform(arg dto.JobContext, record *logrus.Entry) *dto.JobLogTask {
+func (hs *HookLogService) Transform(arg dto.JobContext, record *logrus.Entry) *dto.JobLogTask {
 	fieldList := []dto.TaskLogFieldDTO{
 		{Name: "time_stamp", Value: fmt.Sprintf("%d", record.Time.UnixMilli())},
 		{Name: "level", Value: record.Level.String()},
@@ -61,8 +61,8 @@ func Transform(arg dto.JobContext, record *logrus.Entry) *dto.JobLogTask {
 
 	return &dto.JobLogTask{
 		LogType:     "JOB",
-		NamespaceID: arg.NamespaceId,
-		GroupName:   arg.GroupName,
+		NamespaceID: hs.client.opts.Namespace,
+		GroupName:   hs.client.opts.GroupName,
 		RealTime:    time.Now().UnixMilli(),
 		FieldList:   fieldList,
 		JobID:       int(arg.JobId),
