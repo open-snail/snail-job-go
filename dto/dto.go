@@ -225,9 +225,9 @@ type DispatchJobRequest struct {
 
 type DispatchJobArgs struct {
 	NamespaceId         string                   `json:"namespaceId" description:"namespaceId 不能为空"`
-	JobId               int                      `json:"jobId" description:"jobId 不能为空"`
-	TaskBatchId         int                      `json:"taskBatchId" description:"taskBatchId 不能为空"`
-	TaskId              int                      `json:"taskId" description:"taskId 不能为空"`
+	JobId               int64                    `json:"jobId" description:"jobId 不能为空"`
+	TaskBatchId         int64                    `json:"taskBatchId" description:"taskBatchId 不能为空"`
+	TaskId              int64                    `json:"taskId" description:"taskId 不能为空"`
 	TaskType            constant.JobTaskTypeEnum `json:"taskType" description:"taskType 不能为空"`
 	GroupName           string                   `json:"groupName" description:"group 不能为空"`
 	ParallelNum         int                      `json:"parallelNum" description:"parallelNum 不能为空"`
@@ -245,7 +245,7 @@ type DispatchJobArgs struct {
 }
 
 type StopJob struct {
-	JobId       int    `json:"jobId" description:"jobId 不能为空"`
+	JobId       int64  `json:"jobId" description:"jobId 不能为空"`
 	GroupName   string `json:"groupName" description:"group 不能为空"`
 	TaskBatchId int64  `json:"taskBatchId" description:"taskBatchId 不能为空"`
 }
@@ -283,9 +283,9 @@ type JobLogTask struct {
 	GroupName   string            `json:"groupName"`
 	RealTime    int64             `json:"realTime"`
 	FieldList   []TaskLogFieldDTO `json:"fieldList"`
-	JobID       int               `json:"jobId"`
-	TaskBatchID int               `json:"taskBatchId"`
-	TaskID      int               `json:"taskId"`
+	JobID       int64             `json:"jobId"`
+	TaskBatchID int64             `json:"taskBatchId"`
+	TaskID      int64             `json:"taskId"`
 }
 
 type LogRecord struct {
