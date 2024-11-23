@@ -65,8 +65,8 @@ func (hs *HookLogService) Transform(arg dto.JobContext, record *logrus.Entry) *d
 		GroupName:   hs.client.opts.GroupName,
 		RealTime:    time.Now().UnixMilli(),
 		FieldList:   fieldList,
-		JobID:       int(arg.JobId),
-		TaskBatchID: int(arg.TaskBatchId),
-		TaskID:      int(arg.TaskId),
+		JobID:       arg.JobId,
+		TaskBatchID: arg.TaskBatchId,
+		TaskID:      arg.TaskId,
 	}
 }

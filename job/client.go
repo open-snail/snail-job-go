@@ -59,11 +59,10 @@ func (receiver *SnailJobClient) SendToServer(uri string, payload interface{}, jo
 	c := receiver.opts
 
 	// 构建 Metadata 和请求体
-	// TODO: 提取
 	headers := map[string]string{
 		"host-id":      snailHostID,
 		"host-ip":      c.HostIP,
-		"version":      "1.2.0",
+		"version":      constant.VERSION,
 		"host-port":    c.HostPort,
 		"namespace":    c.Namespace,
 		"group-name":   c.GroupName,

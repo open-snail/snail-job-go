@@ -2,12 +2,10 @@ package job
 
 import (
 	"github.com/sirupsen/logrus"
-	"opensnail.com/snail-job/snail-job-go/dto"
 )
 
 type LoggerHook struct {
-	jobContext dto.JobContext
-	hs         *HookLogService
+	hs *HookLogService
 }
 
 func (h *LoggerHook) Levels() []logrus.Level {

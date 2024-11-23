@@ -23,7 +23,7 @@ func (e *Dispatcher) DispatchJob(dispatchJob dto.DispatchJobRequest) dto.Result 
 	jobContext := buildJobContext(dispatchJob)
 	hls := NewHookLogService(e.client, jobContext)
 	go hls.Init()
-	remoteLogger := e.factory.GetRemoteLogger(dispatchJob.ExecutorInfo, &LoggerHook{jobContext, hls})
+	remoteLogger := e.factory.GetRemoteLogger(dispatchJob.ExecutorInfo, &LoggerHook{hls})
 	localLogger := e.factory.GetLocalLogger(dispatchJob.ExecutorInfo)
 
 	if dispatchJob.RetryCount > 0 {
@@ -66,7 +66,7 @@ func (e *Dispatcher) DispatchJob(dispatchJob dto.DispatchJobRequest) dto.Result 
 	// 集群、 广播、静态分片 直接执行方法
 	jobExecute.JobExecute(jobContext)
 
-	return dto.Result{Status: 1, Data: true}
+	return dto.Result{Status: constant.YES, Data: true}
 }
 
 func buildJobContext(dispatchJob dto.DispatchJobRequest) dto.JobContext {
