@@ -2,21 +2,21 @@ package job
 
 import (
 	"encoding/json"
-	"fmt"
+
 	"opensnail.com/snail-job/snail-job-go/constant"
 	"opensnail.com/snail-job/snail-job-go/dto"
 )
 
 type JobExecutorFutureCallback struct {
-	jobContext   dto.JobContext
-	localLogger  Logger
+	jobContext dto.JobContext
+	// localLogger  Logger
 	remoteLogger Logger
 }
 
 func (executor JobExecutorFutureCallback) onCallback(client SnailJobClient, result *dto.ExecuteResult) {
 
 	// todo 这里要改成Remote日志
-	executor.remoteLogger.Info(fmt.Sprintf("Success result: %v", result))
+	executor.remoteLogger.Info("Success result: %v", result)
 
 	if result == nil {
 		result = dto.Success(nil)
@@ -43,7 +43,11 @@ func dispatchResult(client SnailJobClient, req dto.DispatchJobResultRequest) err
 }
 
 func buildDispatchJobResultRequest(result *dto.ExecuteResult, status constant.JobTaskStatusEnum, jobContext dto.JobContext) dto.DispatchJobResultRequest {
-	wfContext, _ := json.Marshal(jobContext.ChangeWfContext)
+	var wfContext string = ""
+	if jobContext.ChangeWfContext != nil {
+		j, _ := json.Marshal(jobContext.ChangeWfContext)
+		wfContext = string(j)
+	}
 	return dto.DispatchJobResultRequest{
 		TaskBatchId:         jobContext.TaskBatchId,
 		GroupName:           jobContext.GroupName,
@@ -56,6 +60,6 @@ func buildDispatchJobResultRequest(result *dto.ExecuteResult, status constant.Jo
 		TaskStatus:          int(status),
 		Retry:               jobContext.IsRetry,
 		RetryScene:          jobContext.RetryScene,
-		WfContext:           string(wfContext),
+		WfContext:           wfContext,
 	}
 }
