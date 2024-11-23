@@ -7,8 +7,8 @@ import (
 )
 
 type JobExecutorFutureCallback struct {
-	jobContext dto.JobContext
-	// localLogger  Logger
+	jobContext   dto.JobContext
+	localLogger  Logger
 	remoteLogger Logger
 }
 
