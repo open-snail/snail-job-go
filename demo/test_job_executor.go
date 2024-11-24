@@ -16,7 +16,7 @@ type TestJobExecutor struct {
 
 func (executor *TestJobExecutor) DoJobExecute(jobArgs dto.IJobArgs) dto.ExecuteResult {
 
-	time.Sleep(4 * time.Second)
+	time.Sleep(1 * time.Second)
 	interrupt := executor.Context().Value(constant.INTERRUPT_KEY)
 	if interrupt != nil {
 		executor.RemoteLogger().Error("任务被中断. jobId: [%d] now:[%s]", jobArgs.GetJobId(), time.Now().String())

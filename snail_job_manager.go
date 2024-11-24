@@ -12,21 +12,25 @@ import (
 // SnailJobManager snail job 客户端启动者
 type SnailJobManager struct {
 	factory   job.LoggerFactory
-	logger    job.Logger
+	logger    job.SnailJobLogger
 	executors map[string]job.NewJobExecutor
 	client    job.SnailJobClient
 	opts      *dto.Options
+	hls       *job.HookLogService
 	lock      sync.Mutex
 }
 
 func NewSnailJobManager(opts *dto.Options) *SnailJobManager {
 	factory := job.NewLoggerFactory(opts)
+	logger := factory.GetLocalLogger("snail-job-manager")
+	client := job.NewSnailJobClient(opts, factory)
 	return &SnailJobManager{
 		factory:   factory,
-		logger:    factory.GetLocalLogger("snail-job-manager"),
+		logger:    logger,
 		executors: make(map[string]job.NewJobExecutor),
 		opts:      opts,
-		client:    job.NewSnailJobClient(opts, factory),
+		client:    client,
+		hls:       job.NewHookLogService(client),
 	}
 }
 
@@ -41,11 +45,14 @@ func (e *SnailJobManager) GetClient() job.SnailJobClient {
 func (e *SnailJobManager) Run() {
 	e.logger.Info("Run SnailJob Client v%s", constant.VERSION)
 	go e.client.SendHeartbeat()
+	go e.hls.Init()
 	job.RunServer(e.opts, e.client, e.executors, e.factory)
 }
 
 func (e *SnailJobManager) Init() error {
 	e.logger.Info("%s", "Init manager")
+	// 添加日志hook
+	e.factory.GetLogRus().AddHook(&job.LoggerHook{Hs: e.hls})
 	return nil
 }
 

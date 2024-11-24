@@ -8,8 +8,8 @@ import (
 
 type JobExecutorFutureCallback struct {
 	jobContext   dto.JobContext
-	localLogger  Logger
-	remoteLogger Logger
+	localLogger  SnailJobLogger
+	remoteLogger SnailJobLogger
 }
 
 func (executor JobExecutorFutureCallback) onCallback(client SnailJobClient, result *dto.ExecuteResult) {

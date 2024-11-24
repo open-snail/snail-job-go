@@ -12,17 +12,15 @@ import (
 type HookLogService struct {
 	Cache      sync.Map
 	Wg         sync.WaitGroup //  优雅关闭
-	LogEntryCh chan *logrus.Entry
+	LogEntryCh chan *dto.JobLogTask
 	client     SnailJobClient
-	jobContext dto.JobContext
 }
 
-func NewHookLogService(client SnailJobClient, jobContext dto.JobContext) *HookLogService {
+func NewHookLogService(client SnailJobClient) *HookLogService {
 	hs := &HookLogService{
 		Cache:      sync.Map{},
-		LogEntryCh: make(chan *logrus.Entry),
+		LogEntryCh: make(chan *dto.JobLogTask),
 		client:     client,
-		jobContext: jobContext,
 	}
 	return hs
 }
@@ -33,8 +31,8 @@ func (hs *HookLogService) Init() {
 		go func() {
 			defer hs.Wg.Done()
 			var items []*dto.JobLogTask
-			record := hs.Transform(hs.jobContext, entry)
-			items = append(items, record)
+			//record := hs.Transform(hs.jobContext, entry)
+			items = append(items, entry)
 			hs.client.SendBatchLogReport(items)
 		}()
 	}

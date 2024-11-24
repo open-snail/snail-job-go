@@ -20,7 +20,7 @@ import (
 type SnailJobClient struct {
 	opts   *dto.Options
 	client rpc.UnaryRequestClient
-	log    Logger
+	log    SnailJobLogger
 }
 
 func NewSnailJobClient(opts *dto.Options, factory LoggerFactory) SnailJobClient {

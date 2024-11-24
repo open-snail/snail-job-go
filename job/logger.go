@@ -1,10 +1,10 @@
 package job
 
 import (
+	"context"
+	"github.com/sirupsen/logrus"
 	"opensnail.com/snail-job/snail-job-go/dto"
 	"sync"
-
-	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -21,9 +21,10 @@ type logger struct {
 	Name   string
 	Domain string
 	Level  logrus.Level
+	logger *logrus.Entry
 }
 
-type Logger interface {
+type SnailJobLogger interface {
 	Trace(format string, args ...interface{})
 	Debug(format string, args ...interface{})
 	Info(format string, args ...interface{})
@@ -34,51 +35,59 @@ type Logger interface {
 }
 
 type LoggerFactory interface {
-	GetRemoteLogger(name string, h logrus.Hook) Logger
-	GetLocalLogger(name string) Logger
+	GetRemoteLogger(name string, ctx context.Context) SnailJobLogger
+	GetLocalLogger(name string) SnailJobLogger
+	GetLogRus() *logrus.Logger
 }
 
 type loggerFactory struct {
 	lock    sync.Mutex
-	loggers map[string]Logger
+	loggers map[string]SnailJobLogger
 	opts    *dto.Options
+	logger  *logrus.Logger
 }
 
-func (e *loggerFactory) GetRemoteLogger(name string, h logrus.Hook) Logger {
+func (e *loggerFactory) GetRemoteLogger(name string, ctx context.Context) SnailJobLogger {
 	e.lock.Lock()
 	defer e.lock.Unlock()
-	if e.loggers[name] == nil {
-		e.loggers[name] = &logger{
-			Name: name,
-			//Domain: "",
-			Level: e.opts.Level,
-		}
-	}
+	//if e.loggers[name] == nil {
+	//	e.loggers[name] =
+	//}
 
-	if h != nil {
-		logrus.AddHook(h)
+	return &logger{
+		Name: name,
+		//Domain: "",
+		Level:  e.opts.Level,
+		logger: e.logger.WithContext(ctx),
 	}
-	return e.loggers[name]
 }
 
-func (e *loggerFactory) GetLocalLogger(name string) Logger {
+func (e *loggerFactory) GetLocalLogger(name string) SnailJobLogger {
 	e.lock.Lock()
 	defer e.lock.Unlock()
-	if e.loggers[name] == nil {
-		e.loggers[name] = &logger{
-			Name: name,
-			//Domain: "",
-			Level: e.opts.Level,
-		}
+	//if e.loggers[name] == nil {
+	//	e.loggers[name] =
+	//}
+
+	return &logger{
+		Name: name,
+		//Domain: "",
+		Level:  e.opts.Level,
+		logger: e.logger.WithContext(nil),
 	}
-	return e.loggers[name]
 }
 
 func NewLoggerFactory(opts *dto.Options) LoggerFactory {
+	logrus := logrus.New()
 	return &loggerFactory{
-		loggers: make(map[string]Logger),
+		loggers: make(map[string]SnailJobLogger),
 		opts:    opts,
+		logger:  logrus,
 	}
+}
+
+func (e *loggerFactory) GetLogRus() *logrus.Logger {
+	return e.logger
 }
 
 func (l *logger) Info(format string, args ...interface{}) {
@@ -87,7 +96,7 @@ func (l *logger) Info(format string, args ...interface{}) {
 		return
 	}
 
-	logrus.WithFields(logrus.Fields{"domain": l.Domain, "logger": l.Name}).Infof(format, args...)
+	l.logger.WithFields(logrus.Fields{"domain": l.Domain, "logger": l.Name}).Infof(format, args...)
 
 }
 
@@ -95,40 +104,40 @@ func (l *logger) Fatal(format string, args ...interface{}) {
 	if l.Level < Fatal {
 		return
 	}
-	logrus.WithFields(logrus.Fields{"domain": l.Domain, "logger": l.Name}).Fatalf(format, args...)
+	l.logger.WithFields(logrus.Fields{"domain": l.Domain, "logger": l.Name}).Fatalf(format, args...)
 }
 
 func (l *logger) Warn(format string, args ...interface{}) {
 	if l.Level < Warn {
 		return
 	}
-	logrus.WithFields(logrus.Fields{"domain": l.Domain, "logger": l.Name}).Warnf(format, args...)
+	l.logger.WithFields(logrus.Fields{"domain": l.Domain, "logger": l.Name}).Warnf(format, args...)
 }
 
 func (l *logger) Error(format string, args ...interface{}) {
 	if l.Level < Error {
 		return
 	}
-	logrus.WithFields(logrus.Fields{"domain": l.Domain, "logger": l.Name}).Errorf(format, args...)
+	l.logger.WithFields(logrus.Fields{"domain": l.Domain, "logger": l.Name}).Errorf(format, args...)
 }
 
 func (l *logger) Debug(format string, args ...interface{}) {
 	if l.Level < Debug {
 		return
 	}
-	logrus.WithFields(logrus.Fields{"domain": l.Domain, "logger": l.Name}).Debugf(format, args...)
+	l.logger.WithFields(logrus.Fields{"domain": l.Domain, "logger": l.Name}).Debugf(format, args...)
 }
 
 func (l *logger) Trace(format string, args ...interface{}) {
 	if l.Level < Trace {
 		return
 	}
-	logrus.WithFields(logrus.Fields{"domain": l.Domain, "logger": l.Name}).Tracef(format, args...)
+	l.logger.WithFields(logrus.Fields{"domain": l.Domain, "logger": l.Name}).Tracef(format, args...)
 }
 
 func (l *logger) Panic(format string, args ...interface{}) {
 	if l.Level < Panic {
 		return
 	}
-	logrus.WithFields(logrus.Fields{"domain": l.Domain, "logger": l.Name}).Panicf(format, args...)
+	l.logger.WithFields(logrus.Fields{"domain": l.Domain, "logger": l.Name}).Panicf(format, args...)
 }

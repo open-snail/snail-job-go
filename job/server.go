@@ -15,7 +15,7 @@ import (
 type Server struct {
 	rpc.UnimplementedUnaryRequestServer
 	endpoint *Dispatcher
-	logger   Logger
+	logger   SnailJobLogger
 }
 
 // UnaryRequest implements snailjob.UnaryRequestServer

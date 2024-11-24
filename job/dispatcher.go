@@ -3,7 +3,6 @@ package job
 import (
 	"context"
 	"fmt"
-
 	"opensnail.com/snail-job/snail-job-go/constant"
 	"opensnail.com/snail-job/snail-job-go/dto"
 )
@@ -21,9 +20,8 @@ func Init(client SnailJobClient, executors map[string]NewJobExecutor, factory Lo
 
 func (e *Dispatcher) DispatchJob(dispatchJob dto.DispatchJobRequest) dto.Result {
 	jobContext := buildJobContext(dispatchJob)
-	hls := NewHookLogService(e.client, jobContext)
-	go hls.Init()
-	remoteLogger := e.factory.GetRemoteLogger(dispatchJob.ExecutorInfo, &LoggerHook{hls})
+	cxt := context.WithValue(context.Background(), constant.JOB_CONTEXT_KEY, jobContext)
+	remoteLogger := e.factory.GetRemoteLogger(dispatchJob.ExecutorInfo, cxt)
 	localLogger := e.factory.GetLocalLogger(dispatchJob.ExecutorInfo)
 
 	if dispatchJob.RetryCount > 0 {
@@ -46,7 +44,8 @@ func (e *Dispatcher) DispatchJob(dispatchJob dto.DispatchJobRequest) dto.Result 
 	jobStrategy.setExecutorCache(e.execCache)
 	jobStrategy.bindJobStrategy(jobStrategy)
 	jobStrategy.setClient(e.client)
-	cxt := context.WithValue(context.Background(), constant.JOB_CONTEXT_KEY, jobContext)
+
+	//logrus.WithContext()
 	jobStrategy.setContext(cxt)
 	jobStrategy.setLogger(localLogger, remoteLogger)
 	// 注册实例
@@ -116,8 +115,7 @@ func (e *Dispatcher) Stop(stopJob dto.StopJob) dto.Result {
 	if executors, found := e.execCache.executors[stopJob.TaskBatchId]; found {
 		for _, handler := range executors {
 			if handler != nil {
-				cfx := handler.getContext()
-				cfx = context.WithValue(cfx, constant.INTERRUPT_KEY, true)
+				handler.setContext(context.WithValue(handler.getContext(), constant.INTERRUPT_KEY, true))
 			}
 		}
 	}

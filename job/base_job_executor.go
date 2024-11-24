@@ -22,7 +22,7 @@ type JobStrategy interface {
 	setClient(client SnailJobClient)
 	setContext(ctx context.Context)
 	getContext() context.Context
-	setLogger(localLogger Logger, remoteLogger Logger)
+	setLogger(localLogger SnailJobLogger, remoteLogger SnailJobLogger)
 	setExecutorCache(execCache executorCache)
 }
 
@@ -30,8 +30,8 @@ type BaseJobExecutor struct {
 	strategy     JobStrategy
 	client       SnailJobClient
 	ctx          context.Context
-	localLogger  Logger
-	remoteLogger Logger
+	localLogger  SnailJobLogger
+	remoteLogger SnailJobLogger
 	execCache    executorCache
 }
 
@@ -55,7 +55,7 @@ func (executor *BaseJobExecutor) setExecutorCache(cache executorCache) {
 	executor.execCache = cache
 }
 
-func (executor *BaseJobExecutor) setLogger(localLogger Logger, remoteLogger Logger) {
+func (executor *BaseJobExecutor) setLogger(localLogger SnailJobLogger, remoteLogger SnailJobLogger) {
 	executor.localLogger = localLogger
 	executor.remoteLogger = remoteLogger
 }
@@ -64,11 +64,11 @@ func (executor *BaseJobExecutor) Context() context.Context {
 	return executor.ctx
 }
 
-func (executor *BaseJobExecutor) LocalLogger() Logger {
+func (executor *BaseJobExecutor) LocalLogger() SnailJobLogger {
 	return executor.localLogger
 }
 
-func (executor *BaseJobExecutor) RemoteLogger() Logger {
+func (executor *BaseJobExecutor) RemoteLogger() SnailJobLogger {
 	return executor.remoteLogger
 }
 
@@ -202,7 +202,7 @@ func (executor *BaseJobExecutor) buildReduceJobArgs(jobContext dto.JobContext) d
 	return &args
 }
 
-func parseMapResult(maps interface{}, l Logger) []interface{} {
+func parseMapResult(maps interface{}, l SnailJobLogger) []interface{} {
 	var result []interface{}
 
 	switch v := maps.(type) {
