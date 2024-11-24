@@ -3,13 +3,13 @@ package job
 import (
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"log"
 	"math/rand"
 	"strconv"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"opensnail.com/snail-job/snail-job-go/constant"
@@ -18,15 +18,21 @@ import (
 )
 
 type SnailJobClient struct {
-	opts   *dto.Options
-	client rpc.UnaryRequestClient
-	log    SnailJobLogger
+	opts      *dto.Options
+	client    rpc.UnaryRequestClient
+	log       SnailJobLogger
+	LocalLog  *logrus.Logger
+	RemoteLog *logrus.Logger
 }
 
 func NewSnailJobClient(opts *dto.Options, factory LoggerFactory) SnailJobClient {
+	// 创建 LocalLog
+	LocalLog := logrus.New()
+	// 创建 RemoteLog
+	RemoteLog := logrus.New()
+	RemoteLog.SetReportCaller(true)
+
 	// 创建 gRPC 连接
-	flag.Parse()
-	// Set up a connection to the server.
 	conn, err := grpc.NewClient(fmt.Sprintf("%s:%s", opts.ServerHost, opts.ServerPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
@@ -34,9 +40,11 @@ func NewSnailJobClient(opts *dto.Options, factory LoggerFactory) SnailJobClient 
 	// todo
 	//defer conn.Close()
 	return SnailJobClient{
-		opts:   opts,
-		client: rpc.NewUnaryRequestClient(conn),
-		log:    factory.GetLocalLogger("grpc-client"),
+		opts:      opts,
+		client:    rpc.NewUnaryRequestClient(conn),
+		log:       factory.GetLocalLogger("grpc-client"),
+		LocalLog:  LocalLog,
+		RemoteLog: RemoteLog,
 	}
 }
 

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	"opensnail.com/snail-job/snail-job-go/constant"
 	"opensnail.com/snail-job/snail-job-go/dto"
 )
@@ -24,6 +25,7 @@ type JobStrategy interface {
 	getContext() context.Context
 	setLogger(localLogger SnailJobLogger, remoteLogger SnailJobLogger)
 	setExecutorCache(execCache executorCache)
+	setLogrusLogger(localLogger *logrus.Logger, remoteLogger *logrus.Logger)
 }
 
 type BaseJobExecutor struct {
@@ -33,6 +35,8 @@ type BaseJobExecutor struct {
 	localLogger  SnailJobLogger
 	remoteLogger SnailJobLogger
 	execCache    executorCache
+	LocalLog     *logrus.Entry
+	RemoteLog    *logrus.Entry
 }
 
 func (executor *BaseJobExecutor) bindJobStrategy(child JobStrategy) {
@@ -58,6 +62,11 @@ func (executor *BaseJobExecutor) setExecutorCache(cache executorCache) {
 func (executor *BaseJobExecutor) setLogger(localLogger SnailJobLogger, remoteLogger SnailJobLogger) {
 	executor.localLogger = localLogger
 	executor.remoteLogger = remoteLogger
+}
+
+func (executor *BaseJobExecutor) setLogrusLogger(localLogger *logrus.Logger, remoteLogger *logrus.Logger) {
+	executor.LocalLog = localLogger.WithField("logger", "local").WithContext(executor.Context())
+	executor.RemoteLog = remoteLogger.WithField("logger", "remote").WithContext(executor.Context())
 }
 
 func (executor *BaseJobExecutor) Context() context.Context {

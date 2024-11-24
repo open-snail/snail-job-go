@@ -3,6 +3,7 @@ package job
 import (
 	"context"
 	"fmt"
+
 	"opensnail.com/snail-job/snail-job-go/constant"
 	"opensnail.com/snail-job/snail-job-go/dto"
 )
@@ -48,6 +49,7 @@ func (e *Dispatcher) DispatchJob(dispatchJob dto.DispatchJobRequest) dto.Result 
 	//logrus.WithContext()
 	jobStrategy.setContext(cxt)
 	jobStrategy.setLogger(localLogger, remoteLogger)
+	jobStrategy.setLogrusLogger(e.client.LocalLog, e.client.RemoteLog)
 	// 注册实例
 	e.execCache.register(dispatchJob.TaskBatchId, jobStrategy)
 

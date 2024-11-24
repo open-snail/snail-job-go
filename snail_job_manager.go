@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/sirupsen/logrus"
 	"opensnail.com/snail-job/snail-job-go/constant"
 	"opensnail.com/snail-job/snail-job-go/dto"
 	"opensnail.com/snail-job/snail-job-go/job"
@@ -25,13 +24,17 @@ func NewSnailJobManager(opts *dto.Options) *SnailJobManager {
 	factory := job.NewLoggerFactory(opts)
 	logger := factory.GetLocalLogger("snail-job-manager")
 	client := job.NewSnailJobClient(opts, factory)
+	hls := job.NewHookLogService(client)
+	client.RemoteLog.AddHook(&job.LoggerHook{Hls: hls})
+	go hls.Init()
+
 	return &SnailJobManager{
 		factory:   factory,
 		logger:    logger,
 		executors: make(map[string]job.NewJobExecutor),
 		opts:      opts,
 		client:    client,
-		hls:       job.NewHookLogService(client),
+		hls:       hls,
 	}
 }
 
@@ -46,19 +49,19 @@ func (e *SnailJobManager) GetClient() job.SnailJobClient {
 func (e *SnailJobManager) Run() {
 	e.logger.Info("Run SnailJob Client v%s", constant.VERSION)
 	go e.client.SendHeartbeat()
-	go e.hls.Init()
+	// go e.hls.Init()
 	job.RunServer(e.opts, e.client, e.executors, e.factory)
 }
 
 func (e *SnailJobManager) Init() error {
 	e.logger.Info("%s", "Init manager")
 	// 添加日志hook
-	e.factory.GetLogRus().AddHook(&job.LoggerHook{Hls: e.hls})
+	// e.factory.GetLogRus().AddHook(&job.LoggerHook{Hls: e.hls})
 	// 日志添加调用者信息
-	e.factory.GetLogRus().SetReportCaller(true)
+	// e.factory.GetLogRus().SetReportCaller(true)
 	// 设置日志级别
 	// TODO: 配置level
-	e.factory.GetLogRus().SetLevel(logrus.DebugLevel)
+	// e.factory.GetLogRus().SetLevel(logrus.DebugLevel)
 	return nil
 }
 
