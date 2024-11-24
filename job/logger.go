@@ -2,9 +2,10 @@ package job
 
 import (
 	"context"
+	"sync"
+
 	"github.com/sirupsen/logrus"
 	"opensnail.com/snail-job/snail-job-go/dto"
-	"sync"
 )
 
 const (
@@ -91,11 +92,9 @@ func (e *loggerFactory) GetLogRus() *logrus.Logger {
 }
 
 func (l *logger) Info(format string, args ...interface{}) {
-
 	if l.Level < Info {
 		return
 	}
-
 	l.logger.WithFields(logrus.Fields{"domain": l.Domain, "logger": l.Name}).Infof(format, args...)
 
 }

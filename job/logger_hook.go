@@ -2,14 +2,15 @@ package job
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/sirupsen/logrus"
 	"opensnail.com/snail-job/snail-job-go/constant"
 	"opensnail.com/snail-job/snail-job-go/dto"
-	"time"
 )
 
 type LoggerHook struct {
-	Hs *HookLogService
+	Hls *HookLogService
 }
 
 func (h *LoggerHook) Levels() []logrus.Level {
@@ -19,27 +20,30 @@ func (h *LoggerHook) Levels() []logrus.Level {
 func (h *LoggerHook) Fire(entry *logrus.Entry) error {
 	if entry.Context != nil {
 		jobContext := entry.Context.Value(constant.JOB_CONTEXT_KEY).(dto.JobContext)
-		h.Hs.LogEntryCh <- h.transform(&jobContext, entry)
-		fmt.Println(fmt.Sprintf("开始上报: %+v msg:%+v", jobContext.TaskBatchId, entry.Message))
+		h.Hls.LogEntryCh <- h.transform(&jobContext, entry)
+		fmt.Printf("开始上报: %+v msg:%+v\n", jobContext.TaskBatchId, entry.Message)
 	}
 
 	return nil
 }
 
-func (h *LoggerHook) transform(ctx *dto.JobContext, record *logrus.Entry) *dto.JobLogTask {
+func (h *LoggerHook) transform(ctx *dto.JobContext, entry *logrus.Entry) *dto.JobLogTask {
 	if ctx == nil {
 		return nil
 	}
+	if !entry.HasCaller() {
+		panic("请设置 logrus 的 ReportCaller 为 true")
+	}
 
 	fieldList := []dto.TaskLogFieldDTO{
-		{Name: "time_stamp", Value: fmt.Sprintf("%d", record.Time.UnixMilli())},
-		{Name: "level", Value: record.Level.String()},
-		{Name: "thread", Value: ""}, //record.Caller.File},
-		{Name: "message", Value: record.Message},
-		{Name: "location", Value: "unknown"}, //fmt.Sprintf("%s:%s:%d", record.Caller.File, record.Caller.Function, record.Caller.Line)},
-		{Name: "throwable", Value: ""},       //FormatExcInfo(record.Context.Err())},
-		{Name: "host", Value: "localhost"},
-		{Name: "port", Value: "17889"},
+		{Name: "time_stamp", Value: fmt.Sprintf("%d", entry.Time.UnixMilli())},
+		{Name: "level", Value: entry.Level.String()},
+		{Name: "thread", Value: entry.Caller.File},
+		{Name: "message", Value: entry.Message},
+		{Name: "location", Value: fmt.Sprintf("%s:%s:%d", entry.Caller.File, entry.Caller.Function, entry.Caller.Line)},
+		{Name: "throwable", Value: FormatExcInfo(entry.Context.Err())},
+		{Name: "host", Value: h.Hls.client.opts.HostIP},
+		{Name: "port", Value: h.Hls.client.opts.HostPort},
 	}
 
 	return &dto.JobLogTask{

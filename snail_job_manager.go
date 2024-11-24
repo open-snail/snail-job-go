@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/sirupsen/logrus"
 	"opensnail.com/snail-job/snail-job-go/constant"
 	"opensnail.com/snail-job/snail-job-go/dto"
 	"opensnail.com/snail-job/snail-job-go/job"
@@ -52,7 +53,12 @@ func (e *SnailJobManager) Run() {
 func (e *SnailJobManager) Init() error {
 	e.logger.Info("%s", "Init manager")
 	// 添加日志hook
-	e.factory.GetLogRus().AddHook(&job.LoggerHook{Hs: e.hls})
+	e.factory.GetLogRus().AddHook(&job.LoggerHook{Hls: e.hls})
+	// 日志添加调用者信息
+	e.factory.GetLogRus().SetReportCaller(true)
+	// 设置日志级别
+	// TODO: 配置level
+	e.factory.GetLogRus().SetLevel(logrus.DebugLevel)
 	return nil
 }
 
