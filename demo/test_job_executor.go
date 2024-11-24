@@ -20,7 +20,7 @@ func (executor *TestJobExecutor) DoJobExecute(jobArgs dto.IJobArgs) dto.ExecuteR
 	time.Sleep(1 * time.Second)
 	interrupt := executor.Context().Value(constant.INTERRUPT_KEY)
 	if interrupt != nil {
-		executor.RemoteLog.Errorf("任务被中断. jobId: [%d] now:[%s]", jobArgs.GetJobId(), time.Now().String())
+		executor.LocalLogger.Errorf("任务被中断. jobId: [%d] now:[%s]", jobArgs.GetJobId(), time.Now().String())
 		return *dto.Failure(nil, "任务被中断")
 	}
 
@@ -28,7 +28,7 @@ func (executor *TestJobExecutor) DoJobExecute(jobArgs dto.IJobArgs) dto.ExecuteR
 	num2 := 1
 	num3 := num1 / num2
 	fmt.Println(num3)
-	executor.LocalLog.Infof("任务执行结束. jobId: [%d] now:[%s]", jobArgs.GetJobId(), time.Now().String())
-	executor.RemoteLog.Infof("任务执行结束. jobId: [%d] now:[%s]", jobArgs.GetJobId(), time.Now().String())
+	executor.LocalLogger.Infof("任务执行结束. jobId: [%d] now:[%s]", jobArgs.GetJobId(), time.Now().String())
+	executor.RemoteLogger.Infof("任务执行结束. jobId: [%d] now:[%s]", jobArgs.GetJobId(), time.Now().String())
 	return *dto.Success("hello 这是go客户端")
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/sirupsen/logrus"
 	"opensnail.com/snail-job/snail-job-go/constant"
 	"opensnail.com/snail-job/snail-job-go/dto"
 	"opensnail.com/snail-job/snail-job-go/job"
@@ -12,7 +13,7 @@ import (
 // SnailJobManager snail job 客户端启动者
 type SnailJobManager struct {
 	factory   job.LoggerFactory
-	logger    job.SnailJobLogger
+	logger    *logrus.Entry
 	executors map[string]job.NewJobExecutor
 	client    job.SnailJobClient
 	opts      *dto.Options
@@ -22,15 +23,12 @@ type SnailJobManager struct {
 
 func NewSnailJobManager(opts *dto.Options) *SnailJobManager {
 	factory := job.NewLoggerFactory(opts)
-	logger := factory.GetLocalLogger("snail-job-manager")
 	client := job.NewSnailJobClient(opts, factory)
 	hls := job.NewHookLogService(client)
-	client.RemoteLog.AddHook(&job.LoggerHook{Hls: hls})
-	go hls.Init()
-
+	factory.Init(hls)
 	return &SnailJobManager{
 		factory:   factory,
-		logger:    logger,
+		logger:    factory.GetLocalLogger("snail-job-manager"),
 		executors: make(map[string]job.NewJobExecutor),
 		opts:      opts,
 		client:    client,
@@ -47,21 +45,14 @@ func (e *SnailJobManager) GetClient() job.SnailJobClient {
 }
 
 func (e *SnailJobManager) Run() {
-	e.logger.Info("Run SnailJob Client v%s", constant.VERSION)
+	e.logger.Infof("Run SnailJob Client v%s", constant.VERSION)
 	go e.client.SendHeartbeat()
-	// go e.hls.Init()
+	go e.hls.Init()
 	job.RunServer(e.opts, e.client, e.executors, e.factory)
 }
 
 func (e *SnailJobManager) Init() error {
-	e.logger.Info("%s", "Init manager")
-	// 添加日志hook
-	// e.factory.GetLogRus().AddHook(&job.LoggerHook{Hls: e.hls})
-	// 日志添加调用者信息
-	// e.factory.GetLogRus().SetReportCaller(true)
-	// 设置日志级别
-	// TODO: 配置level
-	// e.factory.GetLogRus().SetLevel(logrus.DebugLevel)
+	e.logger.Infof("%s", "Init manager")
 	return nil
 }
 
@@ -75,6 +66,6 @@ func (e *SnailJobManager) Register(name string, executor job.NewJobExecutor) *Sn
 	}
 
 	e.executors[name] = executor
-	e.logger.Info(fmt.Sprintf("Registered executor: %s", name))
+	e.logger.Infof("Registered executor: %s", name)
 	return e
 }

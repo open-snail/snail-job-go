@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"net"
 
 	"google.golang.org/grpc"
@@ -15,7 +16,7 @@ import (
 type Server struct {
 	rpc.UnimplementedUnaryRequestServer
 	endpoint *Dispatcher
-	logger   SnailJobLogger
+	logger   *logrus.Entry
 }
 
 // UnaryRequest implements snailjob.UnaryRequestServer
@@ -43,12 +44,12 @@ func RunServer(opts *dto.Options, client SnailJobClient, executors map[string]Ne
 	logger := factory.GetLocalLogger("grpc-server")
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", opts.HostPort))
 	if err != nil {
-		logger.Info("failed to listen: %v", err)
+		logger.Infof("failed to listen: %v", err)
 	}
 	s := grpc.NewServer()
 	rpc.RegisterUnaryRequestServer(s, &Server{endpoint: Init(client, executors, factory), logger: logger})
-	logger.Info("server listening at %v", lis.Addr())
+	logger.Infof("server listening at %v", lis.Addr())
 	if err := s.Serve(lis); err != nil {
-		logger.Error("failed to serve: %v", err)
+		logger.Errorf("failed to serve: %v", err)
 	}
 }

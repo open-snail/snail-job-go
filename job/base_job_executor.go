@@ -23,20 +23,17 @@ type JobStrategy interface {
 	setClient(client SnailJobClient)
 	setContext(ctx context.Context)
 	getContext() context.Context
-	setLogger(localLogger SnailJobLogger, remoteLogger SnailJobLogger)
+	setLogger(localLogger *logrus.Entry, remoteLogger *logrus.Entry)
 	setExecutorCache(execCache executorCache)
-	setLogrusLogger(localLogger *logrus.Logger, remoteLogger *logrus.Logger)
 }
 
 type BaseJobExecutor struct {
 	strategy     JobStrategy
 	client       SnailJobClient
 	ctx          context.Context
-	localLogger  SnailJobLogger
-	remoteLogger SnailJobLogger
+	LocalLogger  *logrus.Entry
+	RemoteLogger *logrus.Entry
 	execCache    executorCache
-	LocalLog     *logrus.Entry
-	RemoteLog    *logrus.Entry
 }
 
 func (executor *BaseJobExecutor) bindJobStrategy(child JobStrategy) {
@@ -59,26 +56,13 @@ func (executor *BaseJobExecutor) setExecutorCache(cache executorCache) {
 	executor.execCache = cache
 }
 
-func (executor *BaseJobExecutor) setLogger(localLogger SnailJobLogger, remoteLogger SnailJobLogger) {
-	executor.localLogger = localLogger
-	executor.remoteLogger = remoteLogger
-}
-
-func (executor *BaseJobExecutor) setLogrusLogger(localLogger *logrus.Logger, remoteLogger *logrus.Logger) {
-	executor.LocalLog = localLogger.WithField("logger", "local").WithContext(executor.Context())
-	executor.RemoteLog = remoteLogger.WithField("logger", "remote").WithContext(executor.Context())
+func (executor *BaseJobExecutor) setLogger(localLogger *logrus.Entry, remoteLogger *logrus.Entry) {
+	executor.LocalLogger = localLogger
+	executor.RemoteLogger = remoteLogger
 }
 
 func (executor *BaseJobExecutor) Context() context.Context {
 	return executor.ctx
-}
-
-func (executor *BaseJobExecutor) LocalLogger() SnailJobLogger {
-	return executor.localLogger
-}
-
-func (executor *BaseJobExecutor) RemoteLogger() SnailJobLogger {
-	return executor.remoteLogger
 }
 
 // JobExecute 模板类
@@ -93,7 +77,7 @@ func (executor *BaseJobExecutor) JobExecute(jobContext dto.JobContext) {
 			for _, handler := range executors {
 				if executor.strategy == handler {
 					// 删除执行器
-					executor.localLogger.Info("delete executor cache jobTask:[%d]", jobContext.TaskId)
+					executor.LocalLogger.Info("delete executor cache jobTask:[%d]", jobContext.TaskId)
 					//executors[i] = nil
 					break
 				}
@@ -108,7 +92,7 @@ func (executor *BaseJobExecutor) JobExecute(jobContext dto.JobContext) {
 					delete(executor.execCache.executors, jobContext.TaskBatchId)
 				}
 			}
-			executor.localLogger.Info("delete executor cache executors:[%+v]", executor.execCache.executors)
+			executor.LocalLogger.Info("delete executor cache executors:[%+v]", executor.execCache.executors)
 
 		}
 
@@ -118,7 +102,7 @@ func (executor *BaseJobExecutor) JobExecute(jobContext dto.JobContext) {
 		defer func() {
 			err := recover()
 			if err != nil {
-				executor.localLogger.Error("job execute error", err)
+				executor.LocalLogger.Error("job execute error", err)
 				// 失败捕获异常
 				resultChan <- *dto.Failure(err, "执行失败")
 			}
@@ -132,13 +116,13 @@ func (executor *BaseJobExecutor) JobExecute(jobContext dto.JobContext) {
 	// Wait for the result or timeout
 	select {
 	case <-timer.C:
-		executor.remoteLogger.Warn("任务执行超时. jobId: [%d] taskBatchId:[%d]", jobContext.JobId, jobContext.TaskBatchId)
+		executor.LocalLogger.Warn("任务执行超时. jobId: [%d] taskBatchId:[%d]", jobContext.JobId, jobContext.TaskBatchId)
 		// 中断标志
 		executor.ctx = context.WithValue(executor.ctx, constant.INTERRUPT_KEY, true)
 	case result := <-resultChan:
-		executor.remoteLogger.Debug("BaseJobExecutor 执行了 JobExecute. jobId: [%d] result:[%s]", jobContext.JobId, result.Message)
+		executor.LocalLogger.Debug("BaseJobExecutor 执行了 JobExecute. jobId: [%d] result:[%s]", jobContext.JobId, result.Message)
 		// 回调处理
-		callback := &JobExecutorFutureCallback{jobContext, executor.localLogger, executor.remoteLogger}
+		callback := &JobExecutorFutureCallback{jobContext, executor.LocalLogger, executor.RemoteLogger}
 		callback.onCallback(executor.client, &result)
 	}
 }
@@ -205,13 +189,13 @@ func (executor *BaseJobExecutor) buildReduceJobArgs(jobContext dto.JobContext) d
 	args.TaskBatchId = jobContext.TaskBatchId
 	args.WfContext = jobContext.WfContext
 	if maps := jobContext.JobArgsHolder.Maps; maps != nil {
-		args.MapResult = parseMapResult(maps, executor.remoteLogger)
+		args.MapResult = parseMapResult(maps, executor.RemoteLogger)
 	}
 
 	return &args
 }
 
-func parseMapResult(maps interface{}, l SnailJobLogger) []interface{} {
+func parseMapResult(maps interface{}, l *logrus.Entry) []interface{} {
 	var result []interface{}
 
 	switch v := maps.(type) {

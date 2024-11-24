@@ -3,13 +3,14 @@ package job
 import (
 	"context"
 	"encoding/json"
+	"flag"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"log"
 	"math/rand"
 	"strconv"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"opensnail.com/snail-job/snail-job-go/constant"
@@ -18,21 +19,15 @@ import (
 )
 
 type SnailJobClient struct {
-	opts      *dto.Options
-	client    rpc.UnaryRequestClient
-	log       SnailJobLogger
-	LocalLog  *logrus.Logger
-	RemoteLog *logrus.Logger
+	opts   *dto.Options
+	client rpc.UnaryRequestClient
+	log    *logrus.Entry
 }
 
 func NewSnailJobClient(opts *dto.Options, factory LoggerFactory) SnailJobClient {
-	// 创建 LocalLog
-	LocalLog := logrus.New()
-	// 创建 RemoteLog
-	RemoteLog := logrus.New()
-	RemoteLog.SetReportCaller(true)
-
 	// 创建 gRPC 连接
+	flag.Parse()
+	// Set up a connection to the server.
 	conn, err := grpc.NewClient(fmt.Sprintf("%s:%s", opts.ServerHost, opts.ServerPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
@@ -40,11 +35,9 @@ func NewSnailJobClient(opts *dto.Options, factory LoggerFactory) SnailJobClient 
 	// todo
 	//defer conn.Close()
 	return SnailJobClient{
-		opts:      opts,
-		client:    rpc.NewUnaryRequestClient(conn),
-		log:       factory.GetLocalLogger("grpc-client"),
-		LocalLog:  LocalLog,
-		RemoteLog: RemoteLog,
+		opts:   opts,
+		client: rpc.NewUnaryRequestClient(conn),
+		log:    factory.GetLocalLogger("grpc-client"),
 	}
 }
 
@@ -94,27 +87,27 @@ func (receiver *SnailJobClient) SendToServer(uri string, payload interface{}, jo
 
 	response, err := receiver.client.UnaryRequest(ctx, req)
 	if err != nil {
-		l.Error("%s失败: 无法连接服务器: %s", jobName, err)
+		l.Errorf("%s失败: 无法连接服务器: %s", jobName, err)
 		return constant.NO
 	}
 
 	// 检查响应
 	if response.ReqId != reqId {
-		l.Error("reqId 不一致!")
+		l.Errorf("reqId 不一致!")
 	}
 
 	if response.Status == int32(constant.YES) {
-		l.Debug("%s成功: reqId=%d", jobName, reqId)
+		l.Debugf("%s成功: reqId=%d", jobName, reqId)
 		data, err := json.Marshal(payload)
 		if err == nil {
-			l.Debug("data=%s", string(data))
+			l.Debugf("data=%s", string(data))
 		} else {
-			l.Error("data=%v", payload)
+			l.Errorf("data=%v", payload)
 		}
 		return constant.YES
 	}
 
-	l.Error("%s失败: %s", jobName, response.Message)
+	l.Errorf("%s失败: %s", jobName, response.Message)
 	return constant.NO
 }
 

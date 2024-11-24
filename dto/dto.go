@@ -11,14 +11,16 @@ import (
 )
 
 type Options struct {
-	ServerHost string
-	ServerPort string
-	HostIP     string
-	HostPort   string
-	Namespace  string
-	GroupName  string
-	Token      string
-	Level      logrus.Level
+	ServerHost   string
+	ServerPort   string
+	HostIP       string
+	HostPort     string
+	Namespace    string
+	GroupName    string
+	Token        string
+	Level        logrus.Level
+	ReportCaller bool
+	Formatter    logrus.Formatter
 }
 
 type DispatchJobResultRequest struct {

@@ -25,7 +25,7 @@ func (executor *BaseMapJobExecutor) bindMapExecute(child MapExecute) {
 }
 
 func (executor *BaseMapJobExecutor) DoMap(taskList []interface{}, nextTaskName string) (*dto.ExecuteResult, error) {
-	logger := executor.remoteLogger
+	logger := executor.RemoteLogger
 
 	// 检查 nextTaskName
 	if nextTaskName == "" {

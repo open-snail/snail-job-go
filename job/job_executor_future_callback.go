@@ -2,14 +2,15 @@ package job
 
 import (
 	"encoding/json"
+	"github.com/sirupsen/logrus"
 	"opensnail.com/snail-job/snail-job-go/constant"
 	"opensnail.com/snail-job/snail-job-go/dto"
 )
 
 type JobExecutorFutureCallback struct {
 	jobContext   dto.JobContext
-	localLogger  SnailJobLogger
-	remoteLogger SnailJobLogger
+	localLogger  *logrus.Entry
+	remoteLogger *logrus.Entry
 }
 
 func (executor JobExecutorFutureCallback) onCallback(client SnailJobClient, result *dto.ExecuteResult) {

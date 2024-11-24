@@ -15,7 +15,7 @@ type TestMapJobExecutor struct {
 
 func (executor *TestMapJobExecutor) DoJobMapExecute(mpArgs *dto.MapArgs) dto.ExecuteResult {
 	taskList := []interface{}{1, 2, 3} // 示例任务列表
-	logger := executor.LocalLogger()
+	logger := executor.LocalLogger
 	if mpArgs.TaskName == constant.ROOT_MAP {
 		_, _ = executor.DoMap(taskList, "secondTaskName")
 		return *dto.Success(nil)
