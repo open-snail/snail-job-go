@@ -3,13 +3,13 @@ package job
 import (
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"log"
 	"math/rand"
 	"strconv"
 	"time"
+
+	"github.com/sirupsen/logrus"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -26,8 +26,6 @@ type SnailJobClient struct {
 
 func NewSnailJobClient(opts *dto.Options, factory LoggerFactory) SnailJobClient {
 	// 创建 gRPC 连接
-	flag.Parse()
-	// Set up a connection to the server.
 	conn, err := grpc.NewClient(fmt.Sprintf("%s:%s", opts.ServerHost, opts.ServerPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
