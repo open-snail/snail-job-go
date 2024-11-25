@@ -3,6 +3,7 @@ package job
 import (
 	"context"
 	"fmt"
+	"opensnail.com/snail-job/snail-job-go/util"
 
 	"opensnail.com/snail-job/snail-job-go/constant"
 	"opensnail.com/snail-job/snail-job-go/dto"
@@ -46,7 +47,6 @@ func (e *Dispatcher) DispatchJob(dispatchJob dto.DispatchJobRequest) dto.Result 
 	jobStrategy.bindJobStrategy(jobStrategy)
 	jobStrategy.setClient(e.client)
 
-	//logrus.WithContext()
 	jobStrategy.setContext(cxt)
 	jobStrategy.setLogger(localLogger, remoteLogger)
 	// 注册实例
@@ -90,16 +90,29 @@ func buildJobContext(dispatchJob dto.DispatchJobRequest) dto.JobContext {
 		MrStage:             dispatchJob.MrStage,
 	}
 
-	// Parse ArgsStr and WfContext (simplified example)
+	var holder = dto.JobArgsHolder{}
 	if dispatchJob.ArgsStr != "" {
-		jobContext.JobArgsHolder = dto.JobArgsHolder{JobParams: dispatchJob.ArgsStr}
+		err := util.ToObj([]byte(dispatchJob.ArgsStr), &holder)
+		if err != nil {
+			holder.JobParams = dispatchJob.ArgsStr
+			jobContext.JobArgsHolder = holder
+		}
+		jobContext.JobArgsHolder = holder
+	} else {
+		jobContext.JobArgsHolder = dto.JobArgsHolder{}
 	}
 
 	if dispatchJob.WfContext != "" {
+		var wfContext map[string]interface{}
+		err := util.ToObj([]byte(dispatchJob.WfContext), &wfContext)
+		if err == nil {
+			jobContext.WfContext = wfContext
+		}
+	} else {
 		jobContext.WfContext = make(map[string]interface{})
-		// JSON parse here
 	}
 
+	jobContext.ChangeWfContext = make(map[string]interface{})
 	return jobContext
 }
 

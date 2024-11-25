@@ -27,17 +27,25 @@ func (s *Server) UnaryRequest(_ context.Context, in *rpc.GrpcSnailJobRequest) (*
 	var result dto.Result
 	if metadata.Uri == "/job/dispatch/v1" {
 		var request []dto.DispatchJobRequest
-		util.ToObj([]byte(in.Body), &request)
+		err := util.ToObj([]byte(in.Body), &request)
+		if err != nil {
+			return nil, err
+		}
 		result = s.endpoint.DispatchJob(request[0])
 	} else if metadata.Uri == "/job/stop/v1" {
 		var request []dto.StopJob
-		util.ToObj([]byte(in.Body), &request)
+		err := util.ToObj([]byte(in.Body), &request)
+		if err != nil {
+			return nil, err
+
+		}
 		result = s.endpoint.Stop(request[0])
 	} else {
 		return &rpc.GrpcResult{ReqId: in.ReqId, Status: 0, Message: "uri is not supports, uri=" + metadata.Uri, Data: ""}, errors.New("uri is not supports. uri=" + metadata.Uri)
 	}
 
-	return &rpc.GrpcResult{ReqId: in.ReqId, Status: result.Status, Message: result.Message, Data: string(util.ToByteArr(result.Data))}, nil
+	arr, _ := util.ToByteArr(result.Data)
+	return &rpc.GrpcResult{ReqId: in.ReqId, Status: result.Status, Message: result.Message, Data: string(arr)}, nil
 }
 
 func RunServer(opts *dto.Options, client SnailJobClient, executors map[string]NewJobExecutor, factory LoggerFactory) {

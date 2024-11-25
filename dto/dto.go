@@ -67,6 +67,8 @@ type IJobArgs interface {
 	GetExecutorInfo() string
 	GetJobId() int64
 	GetTaskBatchId() int64
+	AppendContext(key string, value interface{})
+	GetWfContext(key string) interface{}
 }
 
 // JobArgs job参数
@@ -89,9 +91,6 @@ func (j *JobArgs) AppendContext(key string, value interface{}) {
 	j.mu.Lock()
 	defer j.mu.Unlock()
 
-	if j.ChangeWfContext == nil {
-		j.ChangeWfContext = make(map[string]interface{})
-	}
 	j.ChangeWfContext[key] = value
 }
 
@@ -130,10 +129,6 @@ func (j *JobArgs) GetTaskBatchId() int64 {
 }
 
 func (j *JobArgs) GetJobId() int64 {
-	if j.JobId == 0 {
-		return 0
-	}
-
 	return j.JobId
 }
 

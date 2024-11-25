@@ -94,6 +94,15 @@ func (executor *BaseMapJobExecutor) DoJobExecute(jobArgs dto.IJobArgs) dto.Execu
 	}
 
 	var mapArgs dto.MapArgs
-	util.ToObj(util.ToByteArr(jobArgs), &mapArgs)
+	arr, toByteArrErr := util.ToByteArr(jobArgs)
+	if toByteArrErr != nil {
+		return *dto.Failure(nil, "参数解析错误")
+	}
+
+	toObjErr := util.ToObj(arr, &mapArgs)
+	if toObjErr != nil {
+		return *dto.Failure(nil, "参数解析错误")
+	}
+
 	return executor.execute.DoJobMapExecute(&mapArgs)
 }

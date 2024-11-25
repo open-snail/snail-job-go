@@ -149,9 +149,12 @@ func (executor *BaseJobExecutor) buildJobArgsBasedOnType(jobContext dto.JobConte
 
 func (executor *BaseJobExecutor) buildBasicJobArgs(jobContext dto.JobContext) dto.IJobArgs {
 	return &dto.JobArgs{
-		JobParams:    jobContext.JobArgsHolder.JobParams,
-		ExecutorInfo: jobContext.ExecutorInfo,
-		TaskBatchId:  jobContext.TaskBatchId,
+		JobParams:       jobContext.JobArgsHolder.JobParams,
+		ExecutorInfo:    jobContext.ExecutorInfo,
+		TaskBatchId:     jobContext.TaskBatchId,
+		JobId:           jobContext.JobId,
+		WfContext:       jobContext.WfContext,
+		ChangeWfContext: jobContext.ChangeWfContext,
 	}
 }
 
@@ -163,6 +166,9 @@ func (executor *BaseJobExecutor) buildShardingJobArgs(jobContext dto.JobContext)
 	}
 	args.JobParams = jobContext.JobArgsHolder.JobParams
 	args.ExecutorInfo = jobContext.ExecutorInfo
+	args.WfContext = jobContext.WfContext
+	args.JobId = jobContext.JobId
+	args.ChangeWfContext = jobContext.ChangeWfContext
 	return &args
 }
 
@@ -176,7 +182,9 @@ func (executor *BaseJobExecutor) buildMapJobArgs(jobContext dto.JobContext) dto.
 	args.JobParams = jobContext.JobArgsHolder.JobParams
 	args.ExecutorInfo = jobContext.ExecutorInfo
 	args.TaskBatchId = jobContext.TaskBatchId
-
+	args.WfContext = jobContext.WfContext
+	args.JobId = jobContext.JobId
+	args.ChangeWfContext = jobContext.ChangeWfContext
 	return &args
 }
 
@@ -188,6 +196,8 @@ func (executor *BaseJobExecutor) buildReduceJobArgs(jobContext dto.JobContext) d
 	args.ExecutorInfo = jobContext.ExecutorInfo
 	args.TaskBatchId = jobContext.TaskBatchId
 	args.WfContext = jobContext.WfContext
+	args.JobId = jobContext.JobId
+	args.ChangeWfContext = jobContext.ChangeWfContext
 	if maps := jobContext.JobArgsHolder.Maps; maps != nil {
 		args.MapResult = parseMapResult(maps, executor.RemoteLogger)
 	}

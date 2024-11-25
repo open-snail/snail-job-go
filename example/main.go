@@ -18,7 +18,7 @@ func main() {
 		Namespace:    "764d604ec6fc45f68cd92514c40e9e1a",
 		GroupName:    "snail_job_demo_group",
 		Token:        "SJ_Wyz3dmsdbDOkDujOTSSoBjGQP1BMsVnj",
-		Level:        logrus.DebugLevel,
+		Level:        logrus.InfoLevel,
 		ReportCaller: true,
 	})
 
@@ -30,6 +30,8 @@ func main() {
 		return &demo.TestMapJobExecutor{}
 	}).Register("testMapReduceJobExecutor", func() job.IJobExecutor {
 		return &demo.TestMapReduceJobExecutor{}
+	}).Register("testWorkflowJobExecutor", func() job.IJobExecutor {
+		return &demo.TestWorkflowJobExecutor{}
 	})
 
 	if nil == exec.Init() {

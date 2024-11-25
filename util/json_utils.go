@@ -4,18 +4,20 @@ import (
 	"encoding/json"
 )
 
-func ToByteArr(v interface{}) []byte {
+func ToByteArr(v interface{}) ([]byte, error) {
 	jsonData, err := json.Marshal(v)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
-	return jsonData
+	return jsonData, nil
 }
 
-func ToObj(jsonData []byte, v any) {
+func ToObj(jsonData []byte, v any) error {
 	err := json.Unmarshal(jsonData, &v)
 	if err != nil {
-		return
+		return err
 	}
+
+	return nil
 }

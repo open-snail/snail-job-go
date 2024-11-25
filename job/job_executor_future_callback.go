@@ -1,7 +1,7 @@
 package job
 
 import (
-	"encoding/json"
+	"opensnail.com/snail-job/snail-job-go/util"
 
 	"github.com/sirupsen/logrus"
 	"opensnail.com/snail-job/snail-job-go/constant"
@@ -42,9 +42,9 @@ func dispatchResult(client SnailJobClient, req dto.DispatchJobResultRequest) err
 }
 
 func buildDispatchJobResultRequest(result *dto.ExecuteResult, status constant.JobTaskStatusEnum, jobContext dto.JobContext) dto.DispatchJobResultRequest {
-	var wfContext string = ""
+	var wfContext = ""
 	if jobContext.ChangeWfContext != nil {
-		j, _ := json.Marshal(jobContext.ChangeWfContext)
+		j, _ := util.ToByteArr(jobContext.ChangeWfContext)
 		wfContext = string(j)
 	}
 	return dto.DispatchJobResultRequest{
