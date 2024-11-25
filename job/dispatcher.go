@@ -26,7 +26,7 @@ func (e *Dispatcher) DispatchJob(dispatchJob dto.DispatchJobRequest) dto.Result 
 	localLogger := e.factory.GetLocalLogger(dispatchJob.ExecutorInfo)
 
 	if dispatchJob.RetryCount > 0 {
-		remoteLogger.Info("Task execution/scheduling failed, retrying. Retry count: [%d]", dispatchJob.RetryCount)
+		remoteLogger.Infof("Task execution/scheduling failed, retrying. Retry count: [%d]", dispatchJob.RetryCount)
 	}
 
 	// 必须是GO客户端才能使用
@@ -37,7 +37,7 @@ func (e *Dispatcher) DispatchJob(dispatchJob dto.DispatchJobRequest) dto.Result 
 
 	jobExecute, _ := e.GetExecutor(dispatchJob.ExecutorInfo)
 	if jobExecute == nil {
-		remoteLogger.Info("Invalid executor configuration. ExecutorInfo: [%s]", dispatchJob.ExecutorInfo)
+		remoteLogger.Infof("Invalid executor configuration. ExecutorInfo: [%s]", dispatchJob.ExecutorInfo)
 		return dto.Result{Status: 1, Message: "执行器配置有误", Data: false}
 	}
 

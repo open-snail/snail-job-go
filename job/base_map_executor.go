@@ -29,19 +29,19 @@ func (executor *BaseMapJobExecutor) DoMap(taskList []interface{}, nextTaskName s
 
 	// 检查 nextTaskName
 	if nextTaskName == "" {
-		logger.Error("The next task name can not blank or null {%s}", nextTaskName)
+		logger.Errorf("The next task name can not blank or null {%s}", nextTaskName)
 		return dto.Failure(nil, ""), fmt.Errorf("the next task name can not blank or null {%s}", nextTaskName)
 	}
 
 	// 检查 taskList
 	if len(taskList) == 0 {
-		logger.Error("The next task name can not blank or null {%s}", nextTaskName)
+		logger.Errorf("The next task name can not blank or null {%s}", nextTaskName)
 		return dto.Failure(nil, ""), fmt.Errorf("the next task name can not blank or null {%s}", nextTaskName)
 	}
 
 	// 检查任务数量
 	if len(taskList) > 200 {
-		logger.Warn("[%s] map task size is too large, network maybe overload... please try to split the tasks.\n", nextTaskName)
+		logger.Warnf("[%s] map task size is too large, network maybe overload... please try to split the tasks.\n", nextTaskName)
 	}
 
 	if len(taskList) > 500 {
@@ -50,7 +50,7 @@ func (executor *BaseMapJobExecutor) DoMap(taskList []interface{}, nextTaskName s
 
 	// 检查任务名是否为 ROOT_MAP
 	if nextTaskName == constant.ROOT_MAP {
-		logger.Error("The Next taskName cannot be %s", "ROOT_MAP")
+		logger.Errorf("The Next taskName cannot be %s", "ROOT_MAP")
 		return dto.Failure(nil, ""), fmt.Errorf("the Next taskName cannot be %s", "ROOT_MAP")
 	}
 
@@ -77,10 +77,10 @@ func (executor *BaseMapJobExecutor) DoMap(taskList []interface{}, nextTaskName s
 
 	status := executor.client.SendBatchReportMapTask(mapTaskRequest)
 	if status == constant.NO {
-		logger.Error("map failed for task: %s", nextTaskName)
+		logger.Errorf("map failed for task: %s", nextTaskName)
 		return dto.Failure(nil, ""), fmt.Errorf("map failed for task: %s", nextTaskName)
 	} else {
-		logger.Info("Map task create successfully!. taskName:[%s] TaskId:[%d]", nextTaskName, jobContext.TaskId)
+		logger.Infof("Map task create successfully!. taskName:[%s] TaskId:[%d]", nextTaskName, jobContext.TaskId)
 	}
 
 	return dto.Success("分片成功"), nil

@@ -14,9 +14,9 @@ type TestMapReduceJobExecutor struct {
 
 func (executor *TestMapReduceJobExecutor) DoJobMapExecute(mpArgs *dto.MapArgs) dto.ExecuteResult {
 	logger := executor.LocalLogger
-	logger.Info("TestMapReduceJobExecutor 开始执行 DoJobMapExecute. jobId: [%d] TaskName:[%s] now:[%s]", mpArgs.GetJobId(), mpArgs.TaskName, time.Now().String())
+	logger.Infof("TestMapReduceJobExecutor 开始执行 DoJobMapExecute. jobId: [%d] TaskName:[%s] now:[%s]", mpArgs.GetJobId(), mpArgs.TaskName, time.Now().String())
 	time.Sleep(1 * time.Second)
-	logger.Info("TestMapReduceJobExecutor 执行结束 DoJobMapExecute. jobId: [%d]  TaskName:[%s] now:[%s]", mpArgs.GetJobId(), mpArgs.TaskName, time.Now().String())
+	logger.Infof("TestMapReduceJobExecutor 执行结束 DoJobMapExecute. jobId: [%d]  TaskName:[%s] now:[%s]", mpArgs.GetJobId(), mpArgs.TaskName, time.Now().String())
 	//panic("这是故意抛出的异常")
 	//num1 := 1
 	//num2 := 1
@@ -29,7 +29,7 @@ func (executor *TestMapReduceJobExecutor) DoJobMapExecute(mpArgs *dto.MapArgs) d
 func (executor *TestMapReduceJobExecutor) DoReduceExecute(jobArgs *dto.ReduceArgs) dto.ExecuteResult {
 	logger := executor.LocalLogger
 	// todo 怎么把jobArgs 转成 mapArgs
-	logger.Info("TestMapReduceJobExecutor 开始执行 DoReduceExecute.")
+	logger.Infof("TestMapReduceJobExecutor 开始执行 DoReduceExecute.")
 
 	return dto.ExecuteResult{}
 }

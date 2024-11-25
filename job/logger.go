@@ -30,7 +30,7 @@ func (e *loggerFactory) GetRemoteLogger(name string, ctx context.Context) *logru
 func (e *loggerFactory) GetLocalLogger(name string) *logrus.Entry {
 	e.lock.Lock()
 	defer e.lock.Unlock()
-	return e.logger.WithFields(logrus.Fields{"logger": name}).WithContext(nil)
+	return e.logger.WithFields(logrus.Fields{"logger": name})
 }
 
 func NewLoggerFactory(opts *dto.Options) LoggerFactory {
@@ -46,12 +46,8 @@ func (e *loggerFactory) Init(hls *HookLogService) {
 	log.AddHook(&LoggerHook{Hls: hls})
 	// 日志添加调用者信息
 	log.SetReportCaller(e.opts.ReportCaller)
-	if &e.opts.Level != nil {
-		// 设置日志级别
-		log.SetLevel(e.opts.Level)
-	} else {
-		log.SetLevel(logrus.InfoLevel)
-	}
+	// 设置日志级别
+	log.SetLevel(e.opts.Level)
 	// 设置日志格式
 	if e.opts.Formatter != nil {
 		log.SetFormatter(e.opts.Formatter)

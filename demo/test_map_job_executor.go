@@ -1,8 +1,9 @@
 package demo
 
 import (
-	"opensnail.com/snail-job/snail-job-go/constant"
 	"time"
+
+	"opensnail.com/snail-job/snail-job-go/constant"
 
 	"opensnail.com/snail-job/snail-job-go/dto"
 	"opensnail.com/snail-job/snail-job-go/job"
@@ -21,11 +22,11 @@ func (executor *TestMapJobExecutor) DoJobMapExecute(mpArgs *dto.MapArgs) dto.Exe
 		return *dto.Success(nil)
 	}
 
-	logger.Info("TestMapJobExecutor 开始执行 DoJobMapExecute. jobId: [%d] TaskName:[%s] ", mpArgs.GetJobId(), mpArgs.TaskName)
+	logger.Infof("TestMapJobExecutor 开始执行 DoJobMapExecute. jobId: [%d] TaskName:[%s] ", mpArgs.GetJobId(), mpArgs.TaskName)
 	time.Sleep(1 * time.Second)
 	num1 := 1
 	num2 := 1
 	num3 := num1 / num2
-	logger.Info("TestMapJobExecutor 执行结束 DoJobMapExecute. jobId: [%d] TaskName:[%s] num3:[%s]", mpArgs.GetJobId(), mpArgs.TaskName, num3)
+	logger.Infof("TestMapJobExecutor 执行结束 DoJobMapExecute. jobId: [%d] TaskName:[%s] num3:[%d]", mpArgs.GetJobId(), mpArgs.TaskName, num3)
 	return *dto.Success("")
 }

@@ -4,8 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"net"
+
+	"github.com/sirupsen/logrus"
 
 	"google.golang.org/grpc"
 	"opensnail.com/snail-job/snail-job-go/dto"
@@ -21,7 +22,7 @@ type Server struct {
 
 // UnaryRequest implements snailjob.UnaryRequestServer
 func (s *Server) UnaryRequest(_ context.Context, in *rpc.GrpcSnailJobRequest) (*rpc.GrpcResult, error) {
-	s.logger.Debug("Received: %v", in)
+	s.logger.Debugf("Received: %v", in)
 	metadata := in.Metadata
 	var result dto.Result
 	if metadata.Uri == "/job/dispatch/v1" {
@@ -40,7 +41,6 @@ func (s *Server) UnaryRequest(_ context.Context, in *rpc.GrpcSnailJobRequest) (*
 }
 
 func RunServer(opts *dto.Options, client SnailJobClient, executors map[string]NewJobExecutor, factory LoggerFactory) {
-
 	logger := factory.GetLocalLogger("grpc-server")
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", opts.HostPort))
 	if err != nil {

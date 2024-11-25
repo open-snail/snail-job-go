@@ -2,6 +2,7 @@ package job
 
 import (
 	"encoding/json"
+
 	"github.com/sirupsen/logrus"
 	"opensnail.com/snail-job/snail-job-go/constant"
 	"opensnail.com/snail-job/snail-job-go/dto"
@@ -14,7 +15,7 @@ type JobExecutorFutureCallback struct {
 }
 
 func (executor JobExecutorFutureCallback) onCallback(client SnailJobClient, result *dto.ExecuteResult) {
-	executor.remoteLogger.Info("Success result: %v", result)
+	executor.remoteLogger.Infof("Success result: %v", result)
 
 	if result == nil {
 		result = dto.Success(nil)
@@ -29,13 +30,13 @@ func (executor JobExecutorFutureCallback) onCallback(client SnailJobClient, resu
 
 	request := buildDispatchJobResultRequest(result, taskStatus, executor.jobContext)
 	if err := dispatchResult(client, request); err != nil {
-		executor.remoteLogger.Error("Error reporting execution result: %s, TaskID: %s\n", err.Error(), executor.jobContext.TaskId)
+		executor.remoteLogger.Errorf("Error reporting execution result: %v, TaskID: %d\n", err.Error(), executor.jobContext.TaskId)
 		//sendMessage(err.Error())
 	}
 }
 
 func dispatchResult(client SnailJobClient, req dto.DispatchJobResultRequest) error {
-	client.log.Info("request server: %+v", req)
+	client.log.Infof("request server: %+v", req)
 	client.SendDispatchResult(req)
 	return nil
 }

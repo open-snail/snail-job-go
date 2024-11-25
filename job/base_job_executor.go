@@ -77,7 +77,7 @@ func (executor *BaseJobExecutor) JobExecute(jobContext dto.JobContext) {
 			for _, handler := range executors {
 				if executor.strategy == handler {
 					// 删除执行器
-					executor.LocalLogger.Info("delete executor cache jobTask:[%d]", jobContext.TaskId)
+					executor.LocalLogger.Infof("delete executor cache jobTask:[%d]", jobContext.TaskId)
 					//executors[i] = nil
 					break
 				}
@@ -92,7 +92,7 @@ func (executor *BaseJobExecutor) JobExecute(jobContext dto.JobContext) {
 					delete(executor.execCache.executors, jobContext.TaskBatchId)
 				}
 			}
-			executor.LocalLogger.Info("delete executor cache executors:[%+v]", executor.execCache.executors)
+			executor.LocalLogger.Infof("delete executor cache executors:[%+v]", executor.execCache.executors)
 
 		}
 
@@ -116,11 +116,11 @@ func (executor *BaseJobExecutor) JobExecute(jobContext dto.JobContext) {
 	// Wait for the result or timeout
 	select {
 	case <-timer.C:
-		executor.LocalLogger.Warn("任务执行超时. jobId: [%d] taskBatchId:[%d]", jobContext.JobId, jobContext.TaskBatchId)
+		executor.LocalLogger.Warnf("任务执行超时. jobId: [%d] taskBatchId:[%d]", jobContext.JobId, jobContext.TaskBatchId)
 		// 中断标志
 		executor.ctx = context.WithValue(executor.ctx, constant.INTERRUPT_KEY, true)
 	case result := <-resultChan:
-		executor.LocalLogger.Debug("BaseJobExecutor 执行了 JobExecute. jobId: [%d] result:[%s]", jobContext.JobId, result.Message)
+		executor.LocalLogger.Debugf("BaseJobExecutor 执行了 JobExecute. jobId: [%d] result:[%s]", jobContext.JobId, result.Message)
 		// 回调处理
 		callback := &JobExecutorFutureCallback{jobContext, executor.LocalLogger, executor.RemoteLogger}
 		callback.onCallback(executor.client, &result)
