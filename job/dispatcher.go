@@ -3,6 +3,7 @@ package job
 import (
 	"context"
 	"fmt"
+
 	"opensnail.com/snail-job/snail-job-go/util"
 
 	"opensnail.com/snail-job/snail-job-go/constant"
@@ -64,7 +65,7 @@ func (e *Dispatcher) DispatchJob(dispatchJob dto.DispatchJobRequest) dto.Result 
 	}
 
 	// 集群、 广播、静态分片 直接执行方法
-	jobExecute.JobExecute(jobContext)
+	go jobExecute.JobExecute(jobContext)
 
 	return dto.Result{Status: constant.YES, Data: true}
 }
