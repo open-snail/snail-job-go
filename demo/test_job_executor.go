@@ -15,6 +15,7 @@ type TestJobExecutor struct {
 	job.BaseJobExecutor
 }
 
+// 测试超时时间
 func (executor *TestJobExecutor) DoJobExecute(jobArgs dto.IJobArgs) dto.ExecuteResult {
 
 	time.Sleep(1 * time.Second)
@@ -22,6 +23,11 @@ func (executor *TestJobExecutor) DoJobExecute(jobArgs dto.IJobArgs) dto.ExecuteR
 	if interrupt != nil {
 		executor.LocalLogger.Errorf("任务被中断. jobId: [%d] now:[%s]", jobArgs.GetJobId(), time.Now().String())
 		return *dto.Failure(nil, "任务被中断")
+	}
+
+	for i := 0; i < 10; i++ {
+		executor.RemoteLogger.Infof("Sleeping for a while, batchId: [%d] now:[%s]", jobArgs.GetTaskBatchId(), time.Now().String())
+		time.Sleep(3 * time.Second)
 	}
 
 	num1 := 1
