@@ -3,8 +3,8 @@ package job
 import (
 	"fmt"
 	"github.com/sirupsen/logrus"
+	"opensnail.com/snail-job/snail-job-go/util"
 	"os"
-	"path/filepath"
 	"strings"
 )
 
@@ -17,15 +17,6 @@ type DefaultFormatter struct {
 	ForceColors bool
 }
 
-func trimProjectPath(fullPath, projectRoot string) string {
-	relativePath, err := filepath.Rel(projectRoot, fullPath)
-	if err != nil {
-		// 如果出错，直接返回原路径
-		return fullPath
-	}
-	return relativePath
-}
-
 func (f *DefaultFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	d := entry.Data
 
@@ -35,9 +26,8 @@ func (f *DefaultFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 			entry.Time.Format("2006-01-02 15:04:05.000"),
 			d["logger"],
 			strings.ToUpper(entry.Level.String()),
-			//filepath.Base(path)+"/"+trimProjectPath(entry.Caller.File, path),
-			trimProjectPath(entry.Caller.File, path),
-			trimProjectPath(entry.Caller.Function, moduleName),
+			util.TrimProjectPath(entry.Caller.File, path),
+			util.TrimProjectPath(entry.Caller.Function, moduleName),
 			entry.Caller.Line,
 			entry.Message,
 		)

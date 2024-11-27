@@ -2,6 +2,8 @@ package job
 
 import (
 	"fmt"
+	"opensnail.com/snail-job/snail-job-go/util"
+	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -35,13 +37,15 @@ func (h *LoggerHook) transform(ctx *dto.JobContext, entry *logrus.Entry) *dto.Jo
 		panic("请设置 logrus 的 ReportCaller 为 true")
 	}
 
+	file := util.TrimProjectPath(entry.Caller.File, path)
+	method := util.TrimProjectPath(entry.Caller.Function, moduleName)
 	fieldList := []dto.TaskLogFieldDTO{
 		{Name: "time_stamp", Value: fmt.Sprintf("%d", entry.Time.UnixMilli())},
-		{Name: "level", Value: entry.Level.String()},
-		{Name: "thread", Value: entry.Caller.File},
+		{Name: "level", Value: strings.ToUpper(entry.Level.String())},
+		{Name: "thread", Value: file},
 		{Name: "message", Value: entry.Message},
-		{Name: "location", Value: fmt.Sprintf("%s:%s:%d", entry.Caller.File, entry.Caller.Function, entry.Caller.Line)},
-		{Name: "throwable", Value: FormatExcInfo(entry.Context.Err())},
+		{Name: "location", Value: fmt.Sprintf("%s:%d", method, entry.Caller.Line)},
+		{Name: "throwable", Value: formatExcInfo(entry.Context.Err())},
 		{Name: "host", Value: h.Hls.client.opts.HostIP},
 		{Name: "port", Value: h.Hls.client.opts.HostPort},
 	}
@@ -56,4 +60,11 @@ func (h *LoggerHook) transform(ctx *dto.JobContext, entry *logrus.Entry) *dto.Jo
 		TaskBatchID: ctx.TaskBatchId,
 		TaskID:      ctx.TaskId,
 	}
+}
+
+func formatExcInfo(err error) string {
+	if err == nil {
+		return ""
+	}
+	return fmt.Sprintf("%s", err)
 }

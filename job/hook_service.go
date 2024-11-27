@@ -1,7 +1,6 @@
 package job
 
 import (
-	"fmt"
 	"sync"
 	"time"
 
@@ -104,11 +103,4 @@ func (hls *HookLogService) flushBuffer() {
 		defer hls.Wg.Done()
 		hls.client.SendBatchLogReport(batch)
 	}(batch)
-}
-
-func FormatExcInfo(err error) string {
-	if err == nil {
-		return ""
-	}
-	return fmt.Sprintf("%s", err)
 }

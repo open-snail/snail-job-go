@@ -36,7 +36,7 @@ func (executor JobExecutorFutureCallback) onCallback(client SnailJobClient, resu
 }
 
 func dispatchResult(client SnailJobClient, req dto.DispatchJobResultRequest) error {
-	client.log.Infof("request server: %+v", req)
+	client.log.Debugf("request server: %+v", req)
 	client.SendDispatchResult(req)
 	return nil
 }

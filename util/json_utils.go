@@ -2,6 +2,7 @@ package util
 
 import (
 	"encoding/json"
+	"path/filepath"
 )
 
 func ToByteArr(v interface{}) ([]byte, error) {
@@ -20,4 +21,13 @@ func ToObj(jsonData []byte, v any) error {
 	}
 
 	return nil
+}
+
+func TrimProjectPath(fullPath, projectRoot string) string {
+	relativePath, err := filepath.Rel(projectRoot, fullPath)
+	if err != nil {
+		// 如果出错，直接返回原路径
+		return fullPath
+	}
+	return relativePath
 }
