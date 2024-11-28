@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"opensnail.com/snail-job/snail-job-go/dto"
-	"opensnail.com/snail-job/snail-job-go/job"
+	"github.com/open-snail/snail-job-go/dto"
+	"github.com/open-snail/snail-job-go/job"
 )
 
 // Test2JobExecutor 这是一个测试类

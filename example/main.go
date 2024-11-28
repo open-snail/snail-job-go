@@ -1,11 +1,11 @@
 package main
 
 import (
+	snailjob "github.com/open-snail/snail-job-go"
+	"github.com/open-snail/snail-job-go/demo"
+	"github.com/open-snail/snail-job-go/dto"
+	"github.com/open-snail/snail-job-go/job"
 	"github.com/sirupsen/logrus"
-	snailjob "opensnail.com/snail-job/snail-job-go"
-	"opensnail.com/snail-job/snail-job-go/demo"
-	"opensnail.com/snail-job/snail-job-go/dto"
-	"opensnail.com/snail-job/snail-job-go/job"
 )
 
 func main() {

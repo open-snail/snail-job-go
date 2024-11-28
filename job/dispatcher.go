@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"opensnail.com/snail-job/snail-job-go/util"
+	"github.com/open-snail/snail-job-go/util"
 
-	"opensnail.com/snail-job/snail-job-go/constant"
-	"opensnail.com/snail-job/snail-job-go/dto"
+	"github.com/open-snail/snail-job-go/constant"
+	"github.com/open-snail/snail-job-go/dto"
 )
 
 type Dispatcher struct {
@@ -64,7 +64,8 @@ func (e *Dispatcher) DispatchJob(dispatchJob dto.DispatchJobRequest) dto.Result 
 		mapReduceExecute.BindMapReduceExecute(mapReduceExecute)
 	}
 
-	// 集群、 广播、静态分片 直接执行方法
+	remoteLogger.Infof("Task scheduling succeeded. taskBatchId:[%d]", dispatchJob.TaskBatchId)
+
 	go jobExecute.JobExecute(jobContext)
 
 	return dto.Result{Status: constant.YES, Data: true}

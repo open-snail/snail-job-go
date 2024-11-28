@@ -2,13 +2,13 @@ package job
 
 import (
 	"fmt"
-	"opensnail.com/snail-job/snail-job-go/util"
+	"github.com/open-snail/snail-job-go/util"
 	"strings"
 	"time"
 
+	"github.com/open-snail/snail-job-go/constant"
+	"github.com/open-snail/snail-job-go/dto"
 	"github.com/sirupsen/logrus"
-	"opensnail.com/snail-job/snail-job-go/constant"
-	"opensnail.com/snail-job/snail-job-go/dto"
 )
 
 type LoggerHook struct {
@@ -23,7 +23,7 @@ func (h *LoggerHook) Fire(entry *logrus.Entry) error {
 	if entry.Context != nil {
 		jobContext := entry.Context.Value(constant.JOB_CONTEXT_KEY).(dto.JobContext)
 		h.Hls.LogEntryCh <- h.transform(&jobContext, entry)
-		fmt.Printf("开始上报: %+v msg:%+v\n", jobContext.TaskBatchId, entry.Message)
+		//fmt.Printf("开始上报: %+v msg:%+v\n", jobContext.TaskBatchId, entry.Message)
 	}
 
 	return nil

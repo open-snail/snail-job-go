@@ -4,8 +4,8 @@ import (
 	"context"
 	"sync"
 
+	"github.com/open-snail/snail-job-go/dto"
 	"github.com/sirupsen/logrus"
-	"opensnail.com/snail-job/snail-job-go/dto"
 )
 
 type LoggerFactory interface {

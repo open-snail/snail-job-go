@@ -1,11 +1,11 @@
 package job
 
 import (
-	"opensnail.com/snail-job/snail-job-go/util"
+	"github.com/open-snail/snail-job-go/util"
 
+	"github.com/open-snail/snail-job-go/constant"
+	"github.com/open-snail/snail-job-go/dto"
 	"github.com/sirupsen/logrus"
-	"opensnail.com/snail-job/snail-job-go/constant"
-	"opensnail.com/snail-job/snail-job-go/dto"
 )
 
 type JobExecutorFutureCallback struct {
@@ -15,7 +15,7 @@ type JobExecutorFutureCallback struct {
 }
 
 func (executor JobExecutorFutureCallback) onCallback(client SnailJobClient, result *dto.ExecuteResult) {
-	executor.remoteLogger.Infof("Success result: %v", result)
+	executor.localLogger.Infof("Success result: %v", result)
 
 	if result == nil {
 		result = dto.Success(nil)

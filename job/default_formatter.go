@@ -2,15 +2,15 @@ package job
 
 import (
 	"fmt"
+	"github.com/open-snail/snail-job-go/util"
 	"github.com/sirupsen/logrus"
-	"opensnail.com/snail-job/snail-job-go/util"
 	"os"
 	"strings"
 )
 
 var (
 	path, _    = os.Getwd()
-	moduleName = "opensnail.com/snail-job"
+	moduleName = "github.com/open-snail"
 )
 
 type DefaultFormatter struct {

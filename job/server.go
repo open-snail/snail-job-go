@@ -8,10 +8,10 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"github.com/open-snail/snail-job-go/dto"
+	"github.com/open-snail/snail-job-go/rpc"
+	"github.com/open-snail/snail-job-go/util"
 	"google.golang.org/grpc"
-	"opensnail.com/snail-job/snail-job-go/dto"
-	"opensnail.com/snail-job/snail-job-go/rpc"
-	"opensnail.com/snail-job/snail-job-go/util"
 )
 
 type Server struct {

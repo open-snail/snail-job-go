@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/open-snail/snail-job-go/constant"
+	"github.com/open-snail/snail-job-go/dto"
+	"github.com/open-snail/snail-job-go/job"
 	"github.com/sirupsen/logrus"
-	"opensnail.com/snail-job/snail-job-go/constant"
-	"opensnail.com/snail-job/snail-job-go/dto"
-	"opensnail.com/snail-job/snail-job-go/job"
 )
 
 // SnailJobManager snail job 客户端启动者

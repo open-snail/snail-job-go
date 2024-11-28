@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/open-snail/snail-job-go/constant"
+	"github.com/open-snail/snail-job-go/dto"
 	"github.com/sirupsen/logrus"
-	"opensnail.com/snail-job/snail-job-go/constant"
-	"opensnail.com/snail-job/snail-job-go/dto"
 )
 
 type NewJobExecutor func() IJobExecutor
