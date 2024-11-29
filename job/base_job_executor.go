@@ -104,7 +104,7 @@ func (executor *BaseJobExecutor) JobExecute(jobContext dto.JobContext) {
 			if err != nil {
 				executor.LocalLogger.Error("job execute error", err)
 				// 失败捕获异常
-				resultChan <- *dto.Failure(err, "执行失败")
+				resultChan <- *dto.Failure().WithMessage("执行失败").WithResult(err)
 			}
 		}()
 

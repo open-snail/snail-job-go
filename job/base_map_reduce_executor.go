@@ -27,12 +27,12 @@ func (executor *BaseMapReduceJobExecutor) DoJobExecute(jobArgs dto.IJobArgs) dto
 	var mapArgs dto.MapArgs
 	arr, toByteArrErr := util.ToByteArr(jobArgs)
 	if toByteArrErr != nil {
-		return *dto.Failure(nil, "参数解析错误")
+		return *dto.Failure().WithMessage("参数解析错误")
 	}
 
 	toObjErr := util.ToObj(arr, &mapArgs)
 	if toObjErr != nil {
-		return *dto.Failure(nil, "参数解析错误")
+		return *dto.Failure().WithMessage("参数解析错误")
 	}
 
 	jobContext := executor.ctx.Value(constant.JOB_CONTEXT_KEY).(dto.JobContext)

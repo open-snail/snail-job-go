@@ -18,7 +18,7 @@ func (executor JobExecutorFutureCallback) onCallback(client SnailJobClient, resu
 	executor.localLogger.Infof("Success result: %v", result)
 
 	if result == nil {
-		result = dto.Success(nil)
+		result = dto.Success()
 	}
 
 	var taskStatus constant.JobTaskStatusEnum
