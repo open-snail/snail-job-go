@@ -11,16 +11,16 @@ import (
 )
 
 type Options struct {
-	ServerHost   string
-	ServerPort   string
-	HostIP       string
-	HostPort     string
-	Namespace    string
-	GroupName    string
-	Token        string
-	Level        logrus.Level
-	ReportCaller bool
-	Formatter    logrus.Formatter
+	ServerHost   string           `description:"服务器IP地址（或域名）；集群时建议通过 nginx 做负载均衡"`
+	ServerPort   string           `description:"服务器通讯端口（不是后台管理页面服务端口）"`
+	HostIP       string           `description:"客户端绑定IP，必须服务器可以访问到；默认自动推断，在服务器无法调度客户端时需要手动配置"`
+	HostPort     string           `description:"客户端通讯端口，默认 17889"`
+	Namespace    string           `description:"命名空间"`
+	GroupName    string           `description:"接入组名"`
+	Token        string           `description:"接入组 token"`
+	Level        logrus.Level     `description:"输出日志的等级"`
+	ReportCaller bool             `description:"日志是否显示调度者的信息"`
+	Formatter    logrus.Formatter `description:"日志格式"`
 }
 
 type DispatchJobResultRequest struct {
