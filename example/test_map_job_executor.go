@@ -19,7 +19,7 @@ func (executor *TestMapJobExecutor) DoJobMapExecute(mpArgs *dto.MapArgs) dto.Exe
 	logger := executor.LocalLogger
 	if mpArgs.TaskName == constant.ROOT_MAP {
 		_, _ = executor.DoMap(taskList, "secondTaskName")
-		return *dto.Success(nil)
+		return *dto.Success()
 	}
 
 	logger.Infof("TestMapJobExecutor 开始执行 DoJobMapExecute. jobId: [%d] TaskName:[%s] ", mpArgs.GetJobId(), mpArgs.TaskName)
@@ -28,5 +28,5 @@ func (executor *TestMapJobExecutor) DoJobMapExecute(mpArgs *dto.MapArgs) dto.Exe
 	num2 := 1
 	num3 := num1 / num2
 	logger.Infof("TestMapJobExecutor 执行结束 DoJobMapExecute. jobId: [%d] TaskName:[%s] num3:[%d]", mpArgs.GetJobId(), mpArgs.TaskName, num3)
-	return *dto.Success("")
+	return *dto.Success()
 }

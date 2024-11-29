@@ -44,7 +44,7 @@ snail-job 项目的 GO 客户端。[snail-job项目 java 后端](https://gitee.c
 
 1. 在go.mod文件中添加依赖
 ```shell
-require  github.com/open-snail/snail-job-go v0.0.2
+require  github.com/open-snail/snail-job-go {版本号}
 ```
 2. 配置客户端参数
 ```go

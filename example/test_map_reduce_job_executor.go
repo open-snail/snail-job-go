@@ -22,7 +22,7 @@ func (executor *TestMapReduceJobExecutor) DoJobMapExecute(mpArgs *dto.MapArgs) d
 	//num2 := 1
 	//num3 := num1 / num2
 	//fmt.Println(num3)
-	return dto.ExecuteResult{}
+	return *dto.Success()
 }
 
 // DoReduceExecute 模板类
@@ -31,7 +31,7 @@ func (executor *TestMapReduceJobExecutor) DoReduceExecute(jobArgs *dto.ReduceArg
 	// todo 怎么把jobArgs 转成 mapArgs
 	logger.Infof("TestMapReduceJobExecutor 开始执行 DoReduceExecute.")
 
-	return dto.ExecuteResult{}
+	return *dto.Success()
 }
 
 func (executor *TestMapReduceJobExecutor) DoMergeReduceExecute(jobArgs *dto.MergeReduceArgs) dto.ExecuteResult {
@@ -40,5 +40,5 @@ func (executor *TestMapReduceJobExecutor) DoMergeReduceExecute(jobArgs *dto.Merg
 	logger := executor.LocalLogger
 	logger.Info("TestMapReduceJobExecutor 开始执行 DoMergeReduceExecute.")
 
-	return dto.ExecuteResult{}
+	return *dto.Success()
 }

@@ -48,12 +48,27 @@ func (p ExecuteResult) String() string {
 	return fmt.Sprintf("(Status: %d, Message: %s Result: %v)", p.Status, p.Message, p.Result)
 }
 
-func Success(result interface{}) *ExecuteResult {
-	return &ExecuteResult{1, "任务执行成功", result}
+func Success() *ExecuteResult {
+	return &ExecuteResult{1, "任务执行成功", nil}
 }
 
-func Failure(result interface{}, msg string) *ExecuteResult {
-	return &ExecuteResult{0, msg, result}
+func Failure() *ExecuteResult {
+	return &ExecuteResult{0, "任务执行失败", nil}
+}
+
+func (p ExecuteResult) WithMessage(message string) *ExecuteResult {
+	p.Message = message
+	return &p
+}
+
+func (p ExecuteResult) WithResult(result interface{}) *ExecuteResult {
+	p.Result = result
+	return &p
+}
+
+func (p ExecuteResult) WithStatus(status int) *ExecuteResult {
+	p.Status = status
+	return &p
 }
 
 type JobArgsHolder struct {

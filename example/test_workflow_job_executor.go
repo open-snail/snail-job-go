@@ -14,5 +14,5 @@ func (executor *TestWorkflowJobExecutor) DoJobExecute(jobArgs dto.IJobArgs) dto.
 	executor.LocalLogger.Infof("TestWorkflowJobExecutor. jobId: [%d] wfContext:[%+v]",
 		jobArgs.GetJobId(), jobArgs.GetWfContext("name"))
 	jobArgs.AppendContext("name", "xiaowoniu")
-	return *dto.Success("")
+	return *dto.Success()
 }

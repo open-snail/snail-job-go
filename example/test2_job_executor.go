@@ -22,5 +22,5 @@ func (executor *Test2JobExecutor) DoJobExecute(jobArgs dto.IJobArgs) dto.Execute
 	num2 := 1
 	num3 := num1 / num2
 	fmt.Println(num3)
-	return *dto.Success("hello 这是go客户端")
+	return *dto.Success().WithMessage("hello 这是go客户端")
 }
