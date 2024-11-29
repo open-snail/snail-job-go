@@ -37,7 +37,7 @@ func (h *LoggerHook) transform(ctx *dto.JobContext, entry *logrus.Entry) *dto.Jo
 		panic("请设置 logrus 的 ReportCaller 为 true")
 	}
 
-	file := util.TrimProjectPath(entry.Caller.File, path)
+	file := entry.Caller.File
 	method := util.TrimProjectPath(entry.Caller.Function, moduleName)
 	fieldList := []dto.TaskLogFieldDTO{
 		{Name: "time_stamp", Value: fmt.Sprintf("%d", entry.Time.UnixMilli())},

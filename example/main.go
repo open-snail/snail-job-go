@@ -2,7 +2,6 @@ package main
 
 import (
 	snailjob "github.com/open-snail/snail-job-go"
-	"github.com/open-snail/snail-job-go/demo"
 	"github.com/open-snail/snail-job-go/dto"
 	"github.com/open-snail/snail-job-go/job"
 	"github.com/sirupsen/logrus"
@@ -23,15 +22,15 @@ func main() {
 	})
 
 	exec.Register("testJobExecutor", func() job.IJobExecutor {
-		return &demo.TestJobExecutor{}
+		return &TestJobExecutor{}
 	}).Register("test2JobExecutor", func() job.IJobExecutor {
-		return &demo.Test2JobExecutor{}
+		return &Test2JobExecutor{}
 	}).Register("testMapJobExecutor", func() job.IJobExecutor {
-		return &demo.TestMapJobExecutor{}
+		return &TestMapJobExecutor{}
 	}).Register("testMapReduceJobExecutor", func() job.IJobExecutor {
-		return &demo.TestMapReduceJobExecutor{}
+		return &TestMapReduceJobExecutor{}
 	}).Register("testWorkflowJobExecutor", func() job.IJobExecutor {
-		return &demo.TestWorkflowJobExecutor{}
+		return &TestWorkflowJobExecutor{}
 	})
 
 	if nil == exec.Init() {

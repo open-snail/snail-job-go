@@ -1,4 +1,4 @@
-package demo
+package main
 
 import (
 	"github.com/open-snail/snail-job-go/dto"
