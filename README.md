@@ -43,6 +43,7 @@ snail-job 项目的 GO 客户端。[snail-job项目 java 后端](https://gitee.c
 ## 开始使用
 
 1. 在go.mod文件中添加依赖
+> 仓库地址: https://pkg.go.dev/github.com/open-snail/snail-job-go
 ```shell
 require  github.com/open-snail/snail-job-go {版本号}
 ```
@@ -86,7 +87,7 @@ type TestJobExecutor struct {
 
 func (executor *Test2JobExecutor) DoJobExecute(jobArgs dto.IJobArgs) dto.ExecuteResult {
 executor.RemoteLogger.Infof("TestJobExecutor 执行结束 DoJobExecute. jobId: [%d] now:[%s]", jobArgs.GetJobId(), time.Now().String())
-return *dto.Success("hello 这是go客户端")
+return *dto.Success().WithMessage("hello 这是go客户端")
 }
 
 ```
@@ -105,11 +106,11 @@ func (executor *TestMapJobExecutor) DoJobMapExecute(mpArgs *dto.MapArgs) dto.Exe
 	logger := executor.LocalLogger
 	if mpArgs.TaskName == constant.ROOT_MAP {
 		_, _ = executor.DoMap([]interface{}{1, 2, 3}, "secondTaskName")
-		return *dto.Success(nil)
+		return *dto.Success()
 	}
 
 	logger.Infof("TestMapJobExecutor执行 DoJobMapExecute. jobId: [%d] TaskName:[%s] ", mpArgs.GetJobId(), mpArgs.TaskName)
-	return *dto.Success("这是动态分片")
+	return *dto.Success().WithMessage("这是动态分片")
 }
 
 ```
@@ -124,7 +125,7 @@ type TestMapReduceJobExecutor struct {
 
 func (executor *TestMapReduceJobExecutor) DoJobMapExecute(mpArgs *dto.MapArgs) dto.ExecuteResult {
 	logger := executor.LocalLogger
-	return *dto.Success("这是动态分片阶段")
+	return *dto.Success().WithMessage("这是动态分片阶段")
 }
 
 // DoReduceExecute 模板类
@@ -132,14 +133,14 @@ func (executor *TestMapReduceJobExecutor) DoReduceExecute(jobArgs *dto.ReduceArg
 	logger := executor.LocalLogger
 	logger.Infof("TestMapReduceJobExecutor 开始执行 DoReduceExecute.")
 
-    return *dto.Success("这是Reduce阶段")
+    return *dto.Success().WithMessage("这是Reduce阶段")
 }
 
 func (executor *TestMapReduceJobExecutor) DoMergeReduceExecute(jobArgs *dto.MergeReduceArgs) dto.ExecuteResult {
 	logger := executor.LocalLogger
 	logger.Info("TestMapReduceJobExecutor 开始执行 DoMergeReduceExecute.")
 
-    return *dto.Success("这是merge阶段")
+    return *dto.Success().WithMessage("这是merge阶段")
 }
 
 ```
@@ -158,10 +159,10 @@ func (executor *TestJobExecutor) DoJobExecute(jobArgs dto.IJobArgs) dto.ExecuteR
 	interrupt := executor.Context().Value(constant.INTERRUPT_KEY)
 	if interrupt != nil {
 		executor.LocalLogger.Errorf("任务被中断. jobId: [%d] now:[%s]", jobArgs.GetJobId(), time.Now().String())
-		return *dto.Failure(nil, "任务被中断")
+		return *dto.Failure().WithMessage("任务被中断")
 	}
 	
-	return *dto.Success("hello 这是go客户端")
+	return *dto.Success().WithMessage("hello 这是go客户端")
 }
 
 ```
@@ -179,7 +180,7 @@ func (executor *TestWorkflowJobExecutor) DoJobExecute(jobArgs dto.IJobArgs) dto.
 	executor.LocalLogger.Infof("TestWorkflowJobExecutor. jobId: [%d] wfContext:[%+v]",
 		jobArgs.GetJobId(), jobArgs.GetWfContext("name"))
 	jobArgs.AppendContext("name", "xiaowoniu")
-	return *dto.Success("测试工作流")
+	return *dto.Success().WithMessage("测试工作流")
 }
 
 ```
